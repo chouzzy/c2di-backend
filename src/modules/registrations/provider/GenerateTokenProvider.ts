@@ -1,19 +1,21 @@
 import { sign } from "jsonwebtoken"
 import { validationResponse } from "../../../types"
-import { Admins } from "../entities/Admins"
+import { UsersEntity } from "../entities/Users"
 
 
 class GenerateTokenProvider {
 
-    async execute(adminID: Admins["id"]): Promise<validationResponse["token"]> {
+    async execute(usersID: UsersEntity["id"]): Promise<validationResponse["token"]> {
 
         const privateKey = process.env.TOKEN_PRIVATE_KEY
+        
         const payload = JSON.stringify({
-            id: adminID,
+            id: usersID,
         })
+
         const token = sign({payload}, privateKey?privateKey:'', {
             
-            subject: adminID,
+            subject: usersID,
             expiresIn: "1d"
         })
 

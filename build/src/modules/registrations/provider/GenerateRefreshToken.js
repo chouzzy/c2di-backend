@@ -16,14 +16,14 @@ exports.GenerateRefreshToken = void 0;
 const dayjs_1 = __importDefault(require("dayjs"));
 const prisma_1 = require("../../../prisma");
 class GenerateRefreshToken {
-    execute(adminID) {
+    execute(usersID) {
         return __awaiter(this, void 0, void 0, function* () {
             const expTimeNumber = Number(process.env.REFRESHTOKEN_EXPIRATION_TIME_NUMBER);
             // const expTimeUnit = process.env.REFRESHTOKEN_EXPIRATION_TIME_UNIT
             const expires_at = (0, dayjs_1.default)().add(expTimeNumber, 'days').unix();
             const generateRefreshToken = yield prisma_1.prisma.refreshToken.create({
                 data: {
-                    adminID,
+                    usersID,
                     expires_at
                 }
             });

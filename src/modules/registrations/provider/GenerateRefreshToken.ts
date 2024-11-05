@@ -1,11 +1,11 @@
 import dayjs from "dayjs";
 import { prisma } from "../../../prisma";
-import { RefreshToken } from "../entities/RefreshToken";
+import { RefreshTokenEntity } from "../entities/RefreshToken";
 
 
 class GenerateRefreshToken {
 
-    async execute(adminID: RefreshToken["adminID"]): Promise<RefreshToken> {
+    async execute(usersID: RefreshTokenEntity["usersID"]): Promise<RefreshTokenEntity> {
 
         const expTimeNumber = Number(process.env.REFRESHTOKEN_EXPIRATION_TIME_NUMBER)
         // const expTimeUnit = process.env.REFRESHTOKEN_EXPIRATION_TIME_UNIT
@@ -14,7 +14,7 @@ class GenerateRefreshToken {
 
         const generateRefreshToken = await prisma.refreshToken.create({
             data: {
-                adminID,
+                usersID,
                 expires_at
             }
         })

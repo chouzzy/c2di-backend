@@ -1,11 +1,10 @@
 import { Request, Response } from "express"
-import { RefreshToken } from "../../entities/RefreshToken"
-import { ErrorValidation } from "./RefreshTokenCheck"
+import { RefreshTokenEntity } from "../../entities/RefreshToken"
 import { RefreshTokenUseCase } from "./RefreshTokenUseCase"
 import { RefreshTokenRepository } from "../../repositories/implementations/RefreshTokenRepository"
 
 interface RefreshTokenRequestProps {
-    id: RefreshToken["id"]
+    id: RefreshTokenEntity["id"]
  }
 
 

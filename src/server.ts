@@ -1,27 +1,31 @@
 import 'reflect-metadata';
 import express, { NextFunction, Request, Response } from 'express'
-import { AppError } from './errors/AppError'
 import { router } from './routes'
-import { webhooksRoutes } from './routes/webhooks';
+import { AppError } from './errors/AppError'
 import bodyParser from 'body-parser';
+import swaggerUi from 'swagger-ui-express';
 import cors from 'cors';
-import Stripe from 'stripe';
+import specs from '../swagger';
+var cookieParser = require('cookie-parser')
 
-const stripe:Stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 const app = express()
 
 app.use(cors({
-    origin:"*",
+    origin: 'http://localhost:3000',
     methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
+    credentials: true, // Permita o envio de credenciais (cookies, headers de autorização)
 }));
 
-app.use('/webhooks', bodyParser.raw({ type: "*/*" }), webhooksRoutes)
 app.use(express.json())
 
 app.use(bodyParser.json({ type: 'application/json' }))
 
+app.use(cookieParser());
+
 app.use(router)
+
+
 
 // Tratamento de erro
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
@@ -33,6 +37,8 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
         })
     }
 
+    console.log(err)
+
     // Erro sem instanciar na classe App Error ex Throw new Error(lalala)
     return res.status(500).json({
         status: 'error',
@@ -40,6 +46,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     })
 })
 
-app.listen(8080, () => console.log('Sir, we are back online! 🦥'))
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-export { stripe }
+app.listen(8081, () => console.log('System working... 🦥'));

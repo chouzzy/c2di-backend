@@ -1,34 +1,34 @@
 import { Router } from "express"
-import { ensureAuthenticated } from "../modules/registrations/middleware/ensureAuthenticate"
-import { adminsRoutes } from "./admins.routes"
-import { donationsRoutes } from "./donations.routes"
 import { refreshTokenRoutes } from "./refreshToken.routes"
-import { schoolClassRoutes } from "./schoolClass.routes"
-import { studentsRoutes } from "./students.routes"
-import { webhooksRoutes } from "./webhooks"
-import { welcomeRoutes } from "./welcome.routes."
-
+import { welcomeRoutes } from "./welcome.routes"
+import { usersRoutes } from "./users.routes"
+import { investmentsRoutes } from "./investments.routes"
+import { userInvestmentsRoutes } from "./userInvestments.routes"
+import { notificationsRoutes } from "./notifications.routes"
+// import { jwtCheck } from "../modules/registrations/middleware/auth0Check"
 
 const router = Router()
 
 //donations routes
 router.use('/', welcomeRoutes)
-//donations routes
-router.use('/donates', donationsRoutes)
 
-// students routes
-router.use('/students', studentsRoutes)
 
-//regristrations routes
-router.use('/admins', adminsRoutes)
+router.use('/investments', investmentsRoutes)
+
+router.use('/usersInvestments', userInvestmentsRoutes)
+
+router.use('/users', usersRoutes)
+
+router.use('/notifications', notificationsRoutes)
+
 router.use('/refresh-token', refreshTokenRoutes)
 
-router.get('/logintest', ensureAuthenticated, (req,res) => {
-    return res.json({success: true})
+router.get('/logintest', (req, res) => {
+    return res.json({ success: true })
 })
 
-router.use('/schoolClass', schoolClassRoutes)
-router.use('/webhooks', webhooksRoutes)
 
 
-export {router}
+export { router }
+// mathfernando
+// LL9i3EHl8M8NRvOn

@@ -12,14 +12,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.GenerateTokenProvider = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 class GenerateTokenProvider {
-    execute(adminID) {
+    execute(usersID) {
         return __awaiter(this, void 0, void 0, function* () {
             const privateKey = process.env.TOKEN_PRIVATE_KEY;
             const payload = JSON.stringify({
-                id: adminID,
+                id: usersID,
             });
             const token = (0, jsonwebtoken_1.sign)({ payload }, privateKey ? privateKey : '', {
-                subject: adminID,
+                subject: usersID,
                 expiresIn: "1d"
             });
             return token;

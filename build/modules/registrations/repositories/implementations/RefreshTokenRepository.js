@@ -13,7 +13,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RefreshTokenRepository = void 0;
-const client_1 = require("@prisma/client");
 const dayjs_1 = __importDefault(require("dayjs"));
 const prisma_1 = require("../../../../prisma");
 const GenerateRefreshToken_1 = require("../../provider/GenerateRefreshToken");
@@ -25,64 +24,63 @@ class RefreshTokenRepository {
     refreshTokenValidation(refreshToken) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const adminRefreshToken = yield prisma_1.prisma.refreshToken.findFirst({
+                const usersRefreshToken = yield prisma_1.prisma.refreshToken.findFirst({
                     where: {
                         id: refreshToken.id
                     }
                 });
-                if (!adminRefreshToken) {
+                if (!usersRefreshToken) {
                     return { isValid: false, errorMessage: "Refresh Token inválido", statusCode: 401 };
                 }
-                // const adminFound = await prisma.admins.findFirst({
+                // const usersFound = await prisma.users.findFirst({
                 //     where: {
-                //         id: adminRefreshToken.adminID
+                //         id: usersRefreshToken.usersID
                 //     }
                 // })
-                // if (!adminFound) {
+                // if (!usersFound) {
                 //     return { isValid: false, errorMessage: "Refresh Token inválido", statusCode: 401 }
                 // }
-                const refreshTokenExpired = (0, dayjs_1.default)().isAfter(dayjs_1.default.unix(adminRefreshToken.expires_at));
+                const refreshTokenExpired = (0, dayjs_1.default)().isAfter(dayjs_1.default.unix(usersRefreshToken.expires_at));
                 if (refreshTokenExpired) {
                     yield prisma_1.prisma.refreshToken.deleteMany({
                         where: {
-                            adminID: adminRefreshToken.adminID
+                            usersID: usersRefreshToken.usersID
                         }
                     });
                     return { isValid: false, errorMessage: "Refresh Token inválido", statusCode: 401 };
                 }
                 yield prisma_1.prisma.refreshToken.deleteMany({
                     where: {
-                        adminID: adminRefreshToken.adminID
+                        usersID: usersRefreshToken.usersID
                     }
                 });
                 //gera novo access token
                 const generateTokenProvider = new GenerateTokenProvider_1.GenerateTokenProvider();
-                const token = yield generateTokenProvider.execute(adminRefreshToken.adminID);
+                const token = yield generateTokenProvider.execute(usersRefreshToken.usersID);
                 //apagar o refresh token e enviar um 401 refresh token expired
                 const generateRefreshToken = new GenerateRefreshToken_1.GenerateRefreshToken();
-                const newRefreshToken = yield generateRefreshToken.execute(adminRefreshToken.adminID);
+                const newRefreshToken = yield generateRefreshToken.execute(usersRefreshToken.usersID);
                 return {
                     isValid: true,
                     token: token,
                     refreshToken: newRefreshToken.id,
-                    // admins: {
-                    //     id: adminFound.id,
-                    //     name: adminFound.name,
-                    //     username: adminFound.username,
-                    //     email: adminFound.email,
+                    // users: {
+                    //     id: usersFound.id,
+                    //     name: usersFound.name,
+                    //     username: usersFound.username,
+                    //     email: usersFound.email,
                     // },
                     statusCode: 202
                 };
             }
             catch (error) {
-                if (error instanceof client_1.Prisma.PrismaClientValidationError) {
-                    const argumentPosition = error.message.search('Argument');
-                    const mongoDBError = error.message.slice(argumentPosition);
-                    return { isValid: false, errorMessage: mongoDBError, statusCode: 403 };
-                }
-                else {
-                    return { isValid: false, errorMessage: String(error), statusCode: 403 };
-                }
+                // if (error instanceof Prisma.PrismaClientValidationError) {
+                //     const argumentPosition = error.message.search('Argument')
+                //     const mongoDBError = error.message.slice(argumentPosition)
+                //     return { isValid: false, errorMessage: mongoDBError, statusCode: 403 }
+                // } else {
+                return { isValid: false, errorMessage: String(error), statusCode: 403 };
+                // }
             }
         });
     }

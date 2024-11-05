@@ -10,160 +10,182 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Donations {
-  id              String  @id @default(uuid()) @map("_id")
-  name            String
-  email           String
-  phoneNumber     String
-  isPhoneWhatsapp Boolean
-  gender          String
-  birth           String
-
-  state      String
-  city       String
-  street     String
-  homeNumber String
-  complement String?
-  district   String
-  zipCode    String
-
-  cpf  String
-  rg   String?
-  cnpj String?
-  ufrg String
-
-  valuePaid     Int
-  paymentMethod String
-  paymentStatus String
-  paymentDate   DateTime?
-
-  donationExpirationDate DateTime?
-
-  ciclesBought Int
-  ciclePaid Int
-  valueBought Int
-
-  stripeSubscriptionID String
-
-  canceledAt DateTime?
-
-  stripeCustomerID String
-  createdAt        DateTime @default(now())
-
-  @@map("Donations")
-}
-
-model Students {
-  id              String  @id @default(uuid()) @map("_id")
-  name            String
-  email           String  @unique
-  gender          String
-  birth           String
-  phoneNumber     String
-  isPhoneWhatsapp Boolean
-  state           String
-  city            String
-  street          String
-  homeNumber      String
-  complement      String?
-  district        String
-  zipCode         String
-
-  cpf                      String
-  rg                       String?
-  ufrg                     String
-  selfDeclaration          String
-  oldSchool                String
-  oldSchoolAdress          String
-  highSchoolGraduationDate String
-  highSchoolPeriod         String
-  metUsMethod              String
-  exStudent                String
-  stripeCustomerID         String
-
-  purcharsedSubscriptions PurchasedSubscriptions[]
-  createdAt               DateTime                 @default(now())
-
-  @@map("Students")
-}
-
-model Admins {
-  id            String        @id @default(uuid()) @map("_id")
-  name          String
-  email         String        @unique
-  username      String        @unique
-  password      String
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @default(now())
-  refresh_token RefreshToken?
-
-  @@map("Admins")
-}
-
 model RefreshToken {
   id         String @id @default(uuid()) @map("_id")
   expires_at Int
-  admin      Admins @relation(fields: [adminID], references: [id])
-  adminID    String @unique
+  users      Users  @relation(fields: [usersID], references: [id])
+  usersID    String @unique
 
   @@map("refresh_token")
 }
 
-model SchoolClass {
-  id              String                              @id @default(uuid()) @map("_id")
-  title           String
-  informations    SchoolClassInformations
-  subscriptions   SchoolClassSubscriptionInformations
-  selectiveStages SchoolClassSelectiveStages[]
-  status          String // Changed from Boolean to String
-  stripeProductID String
-  documents       DocumentsTypes[]
-  registrations   Registrations
+model Users {
+  id                         String   @id @default(uuid()) @map("_id") // ID único do usuário, gerado automaticamente
+  name                       String // Nome completo do usuário
+  email                      String   @unique // Endereço de email do usuário (deve ser único)
+  phoneNumber                String // Número de telefone do usuário
+  gender                     String // Gênero do usuário (ex: Masculino, Feminino, Outro)
+  profession                 String // Profissão do usuário
+  birth                      DateTime // Data de nascimento do usuário
+  cpf                        String   @unique // CPF do usuário (deve ser único)
+  username                   String   @unique // Nome de usuário para login (deve ser único)
+  address                    Json? // Endereço completo do usuário (opcional), armazenado como JSON
+  investorProfileName        String? // Nome que o usuário escolhe para seu perfil de investidor (opcional)
+  investorProfileDescription String? // Descrição que o usuário fornece para seu perfil de investidor (opcional)
 
-  @@map("SchoolClass")
+  role Role // Role do usuário (ex: "investidor", "gerente de projetos", "administrador")
+
+  userInvestments UserInvestment[] // Lista de investimentos que o usuário possui (relacionamento um-para-muitos)
+  investorProfile InvestorProfile? // Relacionamento um-para-um com InvestorProfile
+  notifications   Notification[] // Relacionamento um-para-um com InvestorProfile
+
+  createdAt     DateTime      @default(now()) // Data e hora de criação do usuário
+  updatedAt     DateTime      @updatedAt // Data e hora da última atualização do usuário
+  refresh_token RefreshToken? // Token para renovar a sessão do usuário (opcional)
+
+  @@map("users") // Nome da coleção no MongoDB
 }
 
-type PurchasedSubscriptions {
-  schoolClassID String
-  stripeSubscriptionID String
-  productID     String
-  productName   String
-  paymentMethod String
-  paymentStatus String
-  paymentDate   DateTime?
-  valuePaid     Int
+enum Role {
+  INVESTOR
+  PROJECT_MANAGER
+  ADMINISTRATOR
 }
 
-type DocumentsTypes {
-  docsID       String
-  title        String
-  downloadLink String
+model InvestorProfile {
+  id     String @id @default(uuid()) @map("_id")
+  userId String @unique
+
+  //Dados sobre o perfil do investidor
+  riskTolerance            RiskTolerance // Tolerância a risco (ex: "conservador", "moderado", "arrojado")
+  investmentGoals          String[] // Objetivos de investimento (ex: ["aposentadoria", "comprar imóvel"])
+  investmentHorizon        String // Horizonte de investimento (ex: "curto prazo", "longo prazo")
+  monthlyIncome            Float // Renda mensal do investidor
+  netWorth                 Float? // Patrimônio líquido do investidor -- quanto você tem disponível para investir hoje?
+  investmentExperience     InvestmentExperience // Experiência com investimentos (ex: 1 - nunca investi, 2 - invisto moderadamente, 3 - avançado)
+  preferredInvestmentTypes String[] // Tipos de investimento preferidos (ex: ["renda fixa", "ações", "imóveis"])
+  otherInvestments         String? // Outros investimentos que o investidor possui - seu patrimonio investido, a maioria se reflete em que área?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  //validade do cadastro
+
+  user Users @relation(fields: [userId], references: [id])
+
+  @@map("investor_profiles")
 }
 
-type SchoolClassInformations {
-  description       String
-  whoCanParticipate String
-  observations      String?
-  classContent      String
-  dateSchedule      String
-  hourSchedule      String
-  color             String
+enum RiskTolerance {
+  CONSERVADOR
+  MODERADO
+  ARROJADO
 }
 
-type SchoolClassSubscriptionInformations {
-  status               String
-  price                Int
-  subscriptionSchedule String
+enum InvestmentExperience {
+  INICIANTE
+  INTERMEDIARIO
+  AVANCADO
 }
 
-type SchoolClassSelectiveStages {
-  stagesID    String
-  when        String
-  resultsDate DateTime?
-  description String
+model Investment {
+  id                    String      @id @default(uuid()) @map("_id")
+  title                 String // nome do projeto
+  description           String // descrição
+  projectType           ProjectType // tipo do projeto (residencial: unifamiliar; multifamiliar horizontal; multifamiliar vertical.) Comercial geral e misto
+  totalUnits            Int // total de unidades
+  numberOfFloors        Int // numero de pavimentos
+  unitsPerFloor         Int // unidade por pavimentos
+  floorPlanTypes        String[] // tipologia das plantas -- apto 40m, 50m, 100m
+  launchDate            DateTime // data de lancamento - dia do anuncio 
+  constructionStartDate DateTime // data de inicio de obra
+  expectedDeliveryDate  DateTime // previsao de entrega
+  address               Address // endereço (armazenar como JSON)
+  documents             Document[] // documentos da obra (armazenar como JSON)
+  images                Image[] // imagens da obra (armazenar como JSON)
+
+  investmentValue Float // valor do investimento     
+  companyName     String //nome da construtora
+  partners        String[] // fornecedores principais
+  finishDate      DateTime? // data de entrega
+  buildingStatus  String // status da construção -- vai abrir em uma nova tabela
+  investmentDate  DateTime // data da compra do investidor
+
+  predictedCost PredictedCost // custo previsto - gerente de projeto vai cadastrar custo total e custos macro
+  realizedCost  RealizedCost // custo realizado - custo total, itens macro (mesmos itens do buildingStatus)
+
+  notifications   Notification[]
+  userInvestments UserInvestment[] // tabela que relaciona investimento com usuario
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  @@map("investments")
 }
 
-type Registrations {
-  description String
-  value       Int
+enum ProjectType {
+  RESIDENCIAL_MULTIFAMILIAR
+  RESIDENCIAL_VERTICAL
+  COMERCIAL_GERAL
+  MISTO
+}
+
+type RealizedCost {
+  foundation   String
+  structure    String
+  implantation String
+  workmanship  String
+}
+
+type PredictedCost {
+  foundation   String
+  structure    String
+  implantation String
+  workmanship  String
+}
+
+type Address {
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String
+  zipCode    String
+}
+
+type Document {
+  title String
+  url   String
+}
+
+type Image {
+  url         String
+  description String?
+}
+
+model UserInvestment {
+  id           String     @id @default(uuid()) @map("_id")
+  user         Users      @relation(fields: [userID], references: [id])
+  userID       String
+  investment   Investment @relation(fields: [investmentID], references: [id])
+  investmentID String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@map("userInvestments")
+}
+
+model Notification {
+  id           String   @id @default(uuid()) @map("_id")
+  userId       String // ID do usuário que receberá a notificação
+  investmentId String // ID do investimento relacionado à notificação
+  title        String // Título da notificação (ex: "Atualização da obra X")
+  message      String // Mensagem da notificação (ex: "O status da obra X foi atualizado para 'Em construção'")
+  isRead       Boolean  @default(false) // Indica se a notificação foi lida
+  createdAt    DateTime @default(now())
+
+  investment Investment @relation(fields: [investmentId], references: [id]) // Relacionamento com Investment
+  user       Users      @relation(fields: [userId], references: [id])
+
+  @@map("notifications")
 }

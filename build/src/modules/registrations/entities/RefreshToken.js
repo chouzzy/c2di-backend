@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.RefreshToken = void 0;
-class RefreshToken {
+exports.RefreshTokenEntity = void 0;
+class RefreshTokenEntity {
 }
-exports.RefreshToken = RefreshToken;
+exports.RefreshTokenEntity = RefreshTokenEntity;
