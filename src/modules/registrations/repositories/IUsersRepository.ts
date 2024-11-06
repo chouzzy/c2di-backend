@@ -17,6 +17,8 @@ interface CheckedFilterUsersRequestProps {
 
 interface IUsersRepository {
 
+    findUserByEmail(email:UsersEntity["email"]): Promise<Users>
+
     filterUsers(listUserFormatted: FilterUsersProps): Promise<Users[]>
     
     listResumedUsers(listUserFormatted: FilterUsersProps): Promise<usersResumed[]>

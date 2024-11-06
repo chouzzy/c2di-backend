@@ -5,12 +5,16 @@ import { UpdateUsersController } from "../modules/registrations/useCases/Users/u
 import { DeleteUsersController } from "../modules/registrations/useCases/Users/deleteUsers/DeleteUsersController"
 import { ListResumedUsersController } from "../modules/registrations/useCases/Users/listResumedUsers/ListResumedUsersController"
 import { checkJwtFromCookie, jwtCheck  } from "../modules/registrations/middleware/auth0Check"
+import { FindUserByEmailController } from "../modules/registrations/useCases/Users/findUserByEmail/FindUserByEmailController"
 
 const usersRoutes = Router()   
 
 
 const listUsersController = new ListUsersController()
 usersRoutes.get('/', checkJwtFromCookie , listUsersController.handle)
+
+const findUserByEmailController = new FindUserByEmailController()
+usersRoutes.get('/findUnique', checkJwtFromCookie , findUserByEmailController.handle)
 
 const createUsersController = new CreateUsersController()
 usersRoutes.post('/create', createUsersController.handle)

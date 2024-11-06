@@ -8,6 +8,7 @@ import { createPrismaUser, deletePrismaUser, filterPrismaUser, filterResumedPris
 import { FilterUsersProps } from "../../useCases/Users/listUsers/ListUsersUseCase";
 import { UpdateUsersRequestProps } from "../../useCases/Users/updateUsers/UpdateUsersController";
 import { ListResumedUsersProps } from "../../useCases/Users/listResumedUsers/ListResumedUsersUseCase";
+import { prisma } from "../../../../prisma";
 
 
 class UsersRepository implements IUsersRepository {
@@ -16,6 +17,23 @@ class UsersRepository implements IUsersRepository {
     constructor() {
         this.users = [];
     }
+
+    async findUserByEmail(email: UsersEntity["email"]): Promise<Users> {
+        try {
+
+            const uniqueUser = await prisma.users.findUnique({
+                where: { email: email }
+            })
+
+            if (!uniqueUser) {
+                throw Error("Usuário não encontrado.")
+            }
+            return uniqueUser
+            
+        } catch (error) {
+            throw error
+        }
+    } 
 
     async filterUsers(listUserFormatted: FilterUsersProps):
         Promise<Users[]> {
@@ -27,6 +45,8 @@ class UsersRepository implements IUsersRepository {
             return filteredUsers
 
         } catch (error) {
+            console.log('error')
+            console.log(error)
             throw error
         }
     }
