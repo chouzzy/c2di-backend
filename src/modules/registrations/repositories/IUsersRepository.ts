@@ -29,7 +29,9 @@ interface IUsersRepository {
 
     updateUsers(usersData: UpdateUsersRequestProps, id: UsersEntity["id"]): Promise<Users>
 
-    deleteUsers(id: UsersEntity["id"]): Promise<string>
+    resetPassword(email: UsersEntity["email"]): Promise<void>
+
+    deleteUsers(id: UsersEntity["id"], auth0UserID:string): Promise<string>
 
     // authenticateUsers({ username, password }: AuthenticateUsersRequestProps): Promise<validationResponse>
 

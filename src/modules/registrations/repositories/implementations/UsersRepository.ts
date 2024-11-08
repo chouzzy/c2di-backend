@@ -2,9 +2,9 @@ import { $Enums, Prisma, Users } from "@prisma/client";
 import { userCreated, usersResumed, validationResponse } from "../../../../types";
 import { UsersEntity } from "../../entities/Users";
 import { CreateUsersRequestProps } from "../../useCases/Users/createUsers/CreateUsersController";
-
+import axios from 'axios';
 import { IUsersRepository } from "../IUsersRepository";
-import { createPrismaUser, deletePrismaUser, filterPrismaUser, filterResumedPrismaUser, updatePrismaUser } from "../../../../utils/userUtils";
+import { createPrismaUser, deleteAuth0User, deletePrismaUser, filterPrismaUser, filterResumedPrismaUser, updatePrismaUser } from "../../../../utils/userUtils";
 import { FilterUsersProps } from "../../useCases/Users/listUsers/ListUsersUseCase";
 import { UpdateUsersRequestProps } from "../../useCases/Users/updateUsers/UpdateUsersController";
 import { ListResumedUsersProps } from "../../useCases/Users/listResumedUsers/ListResumedUsersUseCase";
@@ -114,10 +114,40 @@ class UsersRepository implements IUsersRepository {
         }
 
     }
-    async deleteUsers(id: UsersEntity["id"]): Promise<string> {
+
+
+    async resetPassword(email: UsersEntity["email"]): Promise<void> {
+        
+        try {
+            const clientID = process.env.AUTH0_CLIENT_ID
+
+            if (!clientID) {
+                throw Error('ClientID não definido')
+            }
+
+            const options = {
+                method: 'POST',
+                url: `${process.env.AUTH0_ISSUER_BASE_URL}/dbconnections/change_password`,
+                headers: { 'content-type': 'application/json' },
+                data: {
+                    client_id: clientID,
+                    email: email,
+                    connection: 'Username-Password-Authentication'
+                }
+            };
+
+            await axios.request(options);
+
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async deleteUsers(id: UsersEntity["id"], auth0UserID:string): Promise<string> {
 
         try {
 
+            // await deleteAuth0User(auth0UserID, accessToken)
             const deletedUser = await deletePrismaUser(id)
 
             return "Usuário deletado com sucesso."

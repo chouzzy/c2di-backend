@@ -6,11 +6,11 @@ class DeleteUsersUseCase {
     constructor(
         private usersRepository: IUsersRepository) {}
 
-    async execute(id:UsersEntity["id"]): Promise<string> {
+    async execute(id:UsersEntity["id"], auth0UserID:string): Promise<string> {
         
         try {
             
-            const deletedUsers = await this.usersRepository.deleteUsers(id)
+            const deletedUsers = await this.usersRepository.deleteUsers(id, auth0UserID)
             
             return deletedUsers
 

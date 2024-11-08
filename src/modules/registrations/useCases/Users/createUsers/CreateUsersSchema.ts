@@ -5,12 +5,12 @@ YupPassword(yup); // Isso adiciona os métodos de validação de senha ao yup
 const createUsersSchema = yup.object({
   name: yup.string().required("O nome é obrigatório").min(2, "O nome precisa ter no mínimo dois caracteres"),
   email: yup.string().email("Formato de email inválido").required("O e-mail é obrigatório").min(3, "O email precisa ter no mínimo três caracteres"),
-  phoneNumber: yup.string().required("O número de telefone é obrigatório"), 
-  gender: yup.string().required("O gênero é obrigatório"),
-  profession: yup.string().required("A profissão é obrigatória"),
+  phoneNumber: yup.string(), 
+  gender: yup.string(),
+  profession: yup.string(),
 
-  birth: yup.string().required("A data de nascimento é obrigatória").typeError("A data de nascimento deve ser uma data válida no formato YYYY-MM-DD"),
-  cpf: yup.string().required("O CPF é obrigatório").min(11, "CPF inválido").max(11, "CPF inválido."),
+  birth: yup.string().typeError("A data de nascimento deve ser uma data válida no formato YYYY-MM-DD"),
+  cpf: yup.string().min(11, "CPF inválido").max(11, "CPF inválido.").required("O CPF é obrigatório"),
 
   username: yup.string().required("O username é obrigatório").min(3, "O username precisa conter no mínimo 3 caracteres"),
 

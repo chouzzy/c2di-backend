@@ -7,6 +7,7 @@ import { ListResumedUsersController } from "../modules/registrations/useCases/Us
 import { checkJwtFromCookie, jwtCheck  } from "../modules/registrations/middleware/auth0Check"
 import { FindUserByIDController } from "../modules/registrations/useCases/Users/findUserByID/FindUserByIDController"
 import { FindUserByEmailController } from "../modules/registrations/useCases/Users/findUserByEmail/FindUserByEmailController"
+import { ResetPasswordUsersController } from "../modules/registrations/useCases/Users/resetPasswordUsers/ResetPasswordUsersController"
 
 const usersRoutes = Router()   
 
@@ -21,16 +22,19 @@ const findUserByEmailController = new FindUserByEmailController()
 usersRoutes.get('/findUnique', checkJwtFromCookie , findUserByEmailController.handle)
 
 const createUsersController = new CreateUsersController()
-usersRoutes.post('/create', createUsersController.handle)
+usersRoutes.post('/create', checkJwtFromCookie, createUsersController.handle)
 
 const updateUsersController = new UpdateUsersController()
-usersRoutes.put('/update/:id', updateUsersController.handle)
+usersRoutes.put('/update/:id', checkJwtFromCookie, updateUsersController.handle)
 
 const deleteUsersController = new DeleteUsersController()
-usersRoutes.delete('/delete', deleteUsersController.handle)
+usersRoutes.delete('/delete', checkJwtFromCookie, checkJwtFromCookie, deleteUsersController.handle)
 
 const listResumedUsersController = new ListResumedUsersController()
-usersRoutes.get('/resume', listResumedUsersController.handle)
+usersRoutes.get('/resume', checkJwtFromCookie, listResumedUsersController.handle)
+
+const resetPasswordUsersController = new ResetPasswordUsersController()
+usersRoutes.post('/reset-password', checkJwtFromCookie, resetPasswordUsersController.handle)
 
 
 

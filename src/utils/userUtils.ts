@@ -4,6 +4,7 @@ import { ListResumedUsersProps } from "../modules/registrations/useCases/Users/l
 import { FilterUsersRequestProps } from "../modules/registrations/useCases/Users/listUsers/ListUsersController"
 import { FilterUsersProps } from "../modules/registrations/useCases/Users/listUsers/ListUsersUseCase"
 import { UpdateUsersRequestProps } from "../modules/registrations/useCases/Users/updateUsers/UpdateUsersController"
+import axios from 'axios';
 import { prisma } from "../prisma"
 
 
@@ -60,8 +61,11 @@ async function createPrismaUser(usersData: CreateUsersRequestProps) {
         if (existingUserByUsername) {
             throw new Error('O Username já existe.');
         }
-
-        usersData.birth = new Date(usersData.birth)
+        const { birth } = usersData
+        
+        if (birth) {
+            usersData.birth = new Date(birth)
+        }
 
         const createUsers = await prisma.users.create({
             data: usersData
@@ -159,11 +163,11 @@ async function filterResumedPrismaUser(listUserFormatted: ListResumedUsersProps)
                     { role }
                 ]
             },
-            select:{
-                id:true,
-                name:true,
-                email:true,
-                role:true
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true
             },
             skip: (page - 1) * pageRange,
             take: pageRange,
@@ -226,5 +230,33 @@ async function deletePrismaUser(id: UsersEntity["id"]) {
     }
 }
 
+async function deleteAuth0User(auth0UserID: string, accessToken: string) {
 
-export { getPrismaUsers, createPrismaUser, validatePageParams, filterPrismaUser, updatePrismaUser, deletePrismaUser, filterResumedPrismaUser }
+    try {
+        console.log('vamos deletar auth0')
+
+        const options = {
+            method: 'delete',
+            maxBodyLength: Infinity,
+            url: `${process.env.AUTH0_ISSUER_BASE_URL}/api/v2/users/${auth0UserID}`,
+            headers: { Authorization: `Bearer ${process.env.AUTH0_MANAGEMENTAPI_TOKEN}`, }
+        };
+
+        const response = await axios.request(options)
+
+        console.log('vamos deletar auth0')
+
+        console.log(response)
+        // if (response.status === 204) {
+
+        // }
+
+
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+
+export { getPrismaUsers, createPrismaUser, validatePageParams, filterPrismaUser, updatePrismaUser, deletePrismaUser, deleteAuth0User, filterResumedPrismaUser }

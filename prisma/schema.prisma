@@ -23,10 +23,10 @@ model Users {
   id                         String   @id @default(uuid()) @map("_id") // ID único do usuário, gerado automaticamente
   name                       String // Nome completo do usuário
   email                      String   @unique // Endereço de email do usuário (deve ser único)
-  phoneNumber                String // Número de telefone do usuário
-  gender                     String // Gênero do usuário (ex: Masculino, Feminino, Outro)
-  profession                 String // Profissão do usuário
-  birth                      DateTime // Data de nascimento do usuário
+  phoneNumber                String? // Número de telefone do usuário
+  gender                     String? // Gênero do usuário (ex: Masculino, Feminino, Outro)
+  profession                 String? // Profissão do usuário
+  birth                      DateTime? // Data de nascimento do usuário
   cpf                        String   @unique // CPF do usuário (deve ser único)
   username                   String   @unique // Nome de usuário para login (deve ser único)
   address                    Json? // Endereço completo do usuário (opcional), armazenado como JSON

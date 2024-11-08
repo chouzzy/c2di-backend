@@ -3,8 +3,8 @@ import { auth } from "express-oauth2-jwt-bearer";
 import CryptoJS from 'crypto-js';
 
 const jwtCheck = auth({
-    audience: 'https://auth.c2di.awer.co',
-    issuerBaseURL: 'https://dev-pzivs8swerlhnydf.us.auth0.com/',
+    audience: process.env.AUTH0_ISSUER_AUDIENCE_URL,
+    issuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
     tokenSigningAlg: 'RS256'
 });
 
