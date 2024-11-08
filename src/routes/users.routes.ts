@@ -5,6 +5,7 @@ import { UpdateUsersController } from "../modules/registrations/useCases/Users/u
 import { DeleteUsersController } from "../modules/registrations/useCases/Users/deleteUsers/DeleteUsersController"
 import { ListResumedUsersController } from "../modules/registrations/useCases/Users/listResumedUsers/ListResumedUsersController"
 import { checkJwtFromCookie, jwtCheck  } from "../modules/registrations/middleware/auth0Check"
+import { FindUserByIDController } from "../modules/registrations/useCases/Users/findUserByID/FindUserByIDController"
 import { FindUserByEmailController } from "../modules/registrations/useCases/Users/findUserByEmail/FindUserByEmailController"
 
 const usersRoutes = Router()   
@@ -12,6 +13,9 @@ const usersRoutes = Router()
 
 const listUsersController = new ListUsersController()
 usersRoutes.get('/', checkJwtFromCookie , listUsersController.handle)
+
+const findUserByIDController = new FindUserByIDController()
+usersRoutes.get('/findByID/:id', checkJwtFromCookie , findUserByIDController.handle)
 
 const findUserByEmailController = new FindUserByEmailController()
 usersRoutes.get('/findUnique', checkJwtFromCookie , findUserByEmailController.handle)

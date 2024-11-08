@@ -1,8 +1,8 @@
 import { ValidationError } from "yup";
 import { validationResponse } from "../../../../../types";
 import { UsersEntity } from "../../../entities/Users";
-import { FilterUsersRequestProps } from "./FindUserByEmailController";
 import { findUserByEmailSchema } from "./FindUserByEmailSchema";
+import { FilterUsersRequestProps } from "../listUsers/ListUsersController";
 
 
 async function checkQuery(usersQuery: FilterUsersRequestProps) {

@@ -17,20 +17,22 @@ interface CheckedFilterUsersRequestProps {
 
 interface IUsersRepository {
 
-    findUserByEmail(email:UsersEntity["email"]): Promise<Users>
+    findUserByEmail(email: UsersEntity["email"]): Promise<Users>
+
+    findUserByID(id: UsersEntity["id"]): Promise<Users>
 
     filterUsers(listUserFormatted: FilterUsersProps): Promise<Users[]>
-    
+
     listResumedUsers(listUserFormatted: FilterUsersProps): Promise<usersResumed[]>
 
     createUsers(usersData: CreateUsersRequestProps): Promise<userCreated>
 
-    updateUsers(usersData: UpdateUsersRequestProps, id:UsersEntity["id"]): Promise<Users>
+    updateUsers(usersData: UpdateUsersRequestProps, id: UsersEntity["id"]): Promise<Users>
 
-    deleteUsers(id: UsersEntity["id"]):Promise<string>
+    deleteUsers(id: UsersEntity["id"]): Promise<string>
 
     // authenticateUsers({ username, password }: AuthenticateUsersRequestProps): Promise<validationResponse>
 
 }
 
-export {IUsersRepository, CheckedFilterUsersRequestProps }
+export { IUsersRepository, CheckedFilterUsersRequestProps }
