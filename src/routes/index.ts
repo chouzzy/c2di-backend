@@ -7,6 +7,7 @@ import { userInvestmentsRoutes } from "./userInvestments.routes"
 import { notificationsRoutes } from "./notifications.routes"
 import { investorProfileRoutes } from "./investorProfile.routes"
 import { checkJwtFromCookie, jwtCheck } from "../modules/registrations/middleware/auth0Check"
+import { userProprietariosRoutes } from "./userProprietarios.routes"
 // import { jwtCheck } from "../modules/registrations/middleware/auth0Check"
 
 const router = Router()
@@ -18,6 +19,8 @@ router.use('/investorProfile', checkJwtFromCookie, jwtCheck,  investorProfileRou
 router.use('/investments', checkJwtFromCookie, jwtCheck,  investmentsRoutes)
 
 router.use('/usersInvestments', checkJwtFromCookie, jwtCheck,  userInvestmentsRoutes)
+
+router.use('/usersProprietarios', checkJwtFromCookie, jwtCheck,  userProprietariosRoutes)
 
 router.use('/users', usersRoutes)
 

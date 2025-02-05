@@ -1,4 +1,4 @@
-import { Investment } from "@prisma/client";
+import { Investment, Notification, UserInvestment, UserProprietario } from "@prisma/client";
 
 class InvestmentEntity {
   id!: Investment["id"];
@@ -32,6 +32,13 @@ class InvestmentEntity {
   historicoDeValorizacao!: Investment["historicoDeValorizacao"]
   financialTotalProgress!: Investment["financialTotalProgress"]
   buildingTotalProgress!: Investment["buildingTotalProgress"]
+
+  notifications!: Notification[]
+  userInvestments!: UserInvestment[] // tabela que relaciona investimento com usuario
+  userProprietarios!: UserProprietario[] // tabela que relaciona investimento com usuario
+  apartamentTypes!: Investment['apartamentTypes'][]
+  apartaments!: Investment['apartaments'][]
+  valorMetroQuadrado!: Investment["valorMetroQuadrado"]
 
   createdAt!: Investment["createdAt"];
   updatedAt?: Investment["updatedAt"];

@@ -15,4 +15,4 @@ async function checkQuery(listInvestmentData: ListInvestmentRequestProps) {
 
 
 }
-export { checkQuery}
+export { checkQuery }

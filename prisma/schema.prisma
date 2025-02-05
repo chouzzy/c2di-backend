@@ -36,26 +36,29 @@ model Users {
 
   role Role // Role do usuário (ex: "investidor", "gerente de projetos", "administrador")
 
-  userInvestments UserInvestment[] // Lista de investimentos que o usuário possui (relacionamento um-para-muitos)
-  investorProfile InvestorProfile? // Relacionamento um-para-um com InvestorProfile
+  userInvestments   UserInvestment[] // Lista de investimentos que o usuário possui (relacionamento um-para-muitos)
+  userProprietarios UserProprietario[] // tabela que relaciona investimento com usuario
+
+  investorProfile   InvestorProfile? // Relacionamento um-para-um com InvestorProfile
   userNotifications UserNotifications[] // Lista de investimentos que o usuário possui (relacionamento um-para-muitos)
 
-  createdAt     DateTime       @default(now()) // Data e hora de criação do usuário
-  updatedAt     DateTime       @updatedAt // Data e hora da última atualização do usuário
+  createdAt     DateTime      @default(now()) // Data e hora de criação do usuário
+  updatedAt     DateTime      @updatedAt // Data e hora da última atualização do usuário
   refresh_token RefreshToken? // Token para renovar a sessão do usuário (opcional)
 
   @@map("users") // Nome da coleção no MongoDB
 }
 
 type UserNotifications {
-  notificationID   String
-  isRead    Boolean @default(false)
+  notificationID String
+  isRead         Boolean @default(false)
 }
 
 enum Role {
   INVESTOR
   PROJECT_MANAGER
   ADMINISTRATOR
+  PROPRIETARIO
 }
 
 model InvestorProfile {
@@ -129,8 +132,12 @@ model Investment {
   financialTotalProgress FinancialTotalProgress[]
   buildingTotalProgress  BuildingTotalProgress[]
 
-  notifications   Notification[]
-  userInvestments UserInvestment[] // tabela que relaciona investimento com usuario
+  notifications      Notification[]
+  userInvestments    UserInvestment[] // tabela que relaciona investimento com usuario
+  userProprietarios  UserProprietario[] // tabela que relaciona investimento com usuario
+  apartamentTypes    ApartamentTypes[]
+  apartaments        Apartaments[]
+  valorMetroQuadrado ValorMetroQuadrado[]
 
   projectManagerID String //ID Do criador do projeto
 
@@ -147,6 +154,45 @@ enum ProjectType {
   RESIDENCIAL_VERTICAL
   COMERCIAL_GERAL
   MISTO
+}
+
+type ApartamentTypes {
+  id          String
+  metragem    String
+  description String
+  fotos       String[]
+  plantas     String[]
+  media360    ApartamentMedia360
+}
+
+type ValorMetroQuadrado {
+  id    String   @default(uuid())
+  valor Int      @default(0)
+  data  DateTime @default(now())
+}
+
+type ApartamentMedia360 {
+  salaDeEstar  String[]
+  salaDeJantar String[]
+  cozinha      String[]
+  quarto1      String[]
+  quarto2      String[]
+  quarto3      String[]
+  banheiro1    String[]
+  banheiro2    String[]
+  banheiro3    String[]
+  sacada       String[]
+  lavanderia   String[]
+  hall         String[]
+}
+
+type Apartaments {
+  id       String
+  andar    String
+  final    String
+  metragem String
+  userId   String?
+  tipoId   String // Adiciona o campo tipoId para referenciar o ApartamentTypes
 }
 
 type RealizedCost {
@@ -230,11 +276,29 @@ type HistoricoDeValorizacao {
 }
 
 model UserInvestment {
+  id               String       @id @default(uuid()) @map("_id")
+  user             Users        @relation(fields: [userID], references: [id])
+  userID           String
+  investment       Investment   @relation(fields: [investmentID], references: [id])
+  investmentID     String
+  investedValue    Int // Valor investido pelo usuário
+  valorCorrente    Int // Valor do empreendimento quando investido pelo usuário
+  documents        Document[] // Valor do empreendimento quando investido pelo usuário
+  apartament       Apartaments?
+  dataInvestimento DateTime     @default(now())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@map("userInvestments")
+}
+
+model UserProprietario {
   id               String     @id @default(uuid()) @map("_id")
   user             Users      @relation(fields: [userID], references: [id])
   userID           String
   investment       Investment @relation(fields: [investmentID], references: [id])
   investmentID     String
+  apartamentID     String
   investedValue    Int // Valor investido pelo usuário
   valorCorrente    Int // Valor do empreendimento quando investido pelo usuário
   documents        Document[] // Valor do empreendimento quando investido pelo usuário
@@ -242,7 +306,7 @@ model UserInvestment {
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
 
-  @@map("userInvestments")
+  @@map("userProprietarios")
 }
 
 model Notification {

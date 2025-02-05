@@ -27,6 +27,10 @@ interface IInvestmentRepository {
     deleteInvestmentPartner(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["partners"][0]["id"]): Promise<Investment["partners"]>
     
     importInvestmentProgress(worksheet:Worksheet, id:Investment["id"]): Promise<Investment>
+
+    importUnidades(worksheet:Worksheet, id:Investment["id"]): Promise<Investment>
+
+    importMetroQuadrado(worksheet:Worksheet, id:Investment["id"]): Promise<Investment>
 }
 
 export { IInvestmentRepository }

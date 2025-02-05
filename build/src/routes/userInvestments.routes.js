@@ -6,10 +6,13 @@ const ListUserInvestmentsController_1 = require("../modules/investments/useCases
 const CreateUserInvestmentController_1 = require("../modules/investments/useCases/UserInvestment/createUserInvestment/CreateUserInvestmentController");
 const ListUserInvestmentByInvestmentsIDController_1 = require("../modules/investments/useCases/UserInvestment/listUserInvestmentsByInvestmentsID/ListUserInvestmentByInvestmentsIDController");
 const DeleteUserInvestmentsController_1 = require("../modules/investments/useCases/UserInvestment/deleteUserInvestments/DeleteUserInvestmentsController");
+const ListUserInvestmentByUserIDController_1 = require("../modules/investments/useCases/UserInvestment/listUserInvestmentsByUserID/ListUserInvestmentByUserIDController");
 const userInvestmentsRoutes = (0, express_1.Router)();
 exports.userInvestmentsRoutes = userInvestmentsRoutes;
 const listUserInvestmentController = new ListUserInvestmentsController_1.ListUserInvestmentController();
 userInvestmentsRoutes.get('/', listUserInvestmentController.handle);
+const listUserInvestmentByUserIDController = new ListUserInvestmentByUserIDController_1.ListUserInvestmentByUserIDController();
+userInvestmentsRoutes.get('/byUser', listUserInvestmentByUserIDController.handle);
 const listUserInvestmentByInvestmentsIDController = new ListUserInvestmentByInvestmentsIDController_1.ListUserInvestmentByInvestmentsIDController();
 userInvestmentsRoutes.get('/byInvestment', listUserInvestmentByInvestmentsIDController.handle);
 const deleteUserInvestmentController = new DeleteUserInvestmentsController_1.DeleteUserInvestmentsController();

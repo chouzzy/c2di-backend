@@ -9,8 +9,9 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.importPrismaInvestmentProgress = exports.deletePrismaInvestmentPartner = exports.deletePrismaInvestmentDocument = exports.validatePageParams = exports.deletePrismaInvestmentImage = exports.filterPrismaInvestmentByID = exports.deletePrismaInvestment = exports.updatePrismaInvestment = exports.filterPrismaInvestment = exports.createPrismaInvestment = void 0;
+exports.importInvestmentUnidades = exports.importPrismaInvestmentProgress = exports.deletePrismaInvestmentPartner = exports.deletePrismaInvestmentDocument = exports.validatePageParams = exports.deletePrismaInvestmentImage = exports.filterPrismaInvestmentByID = exports.deletePrismaInvestment = exports.updatePrismaInvestment = exports.filterPrismaInvestment = exports.createPrismaInvestment = void 0;
 const prisma_1 = require("../prisma");
+const uuid_1 = require("uuid");
 function createPrismaInvestment(investmentData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -35,6 +36,23 @@ function createPrismaInvestment(investmentData) {
             }
             console.log('investmentData');
             console.log(investmentData);
+            const { buildingTotalProgress, financialTotalProgress, buildingProgress } = investmentData;
+            if (!buildingTotalProgress) {
+                investmentData.buildingTotalProgress = [{ data: new Date(), previsto: 0, realizado: 0 }];
+            }
+            if (!financialTotalProgress) {
+                investmentData.financialTotalProgress = [{ data: new Date(), previsto: 0, realizado: 0 }];
+            }
+            if (!buildingProgress) {
+                investmentData.buildingProgress = {
+                    acabamento: 0,
+                    alvenaria: 0,
+                    estrutura: 0,
+                    fundacao: 0,
+                    instalacoes: 0,
+                    pintura: 0
+                };
+            }
             const createdInvestment = yield prisma_1.prisma.investment.create({
                 data: investmentData
             });
@@ -312,6 +330,109 @@ function importPrismaInvestmentProgress(worksheet, id) {
     });
 }
 exports.importPrismaInvestmentProgress = importPrismaInvestmentProgress;
+function criarTiposApartamento(worksheet) {
+    const tiposApartamentoSet = new Set(); // Cria um Set para armazenar os tipos únicos
+    // Itera sobre as linhas da planilha (a partir da segunda linha)
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+        const row = worksheet.getRow(rowNumber);
+        // Itera sobre as células da linha (a partir da segunda célula)
+        for (let colNumber = 2; colNumber <= row.cellCount; colNumber++) {
+            const valorCelula = row.getCell(colNumber).value;
+            if (valorCelula && typeof valorCelula === 'string') {
+                // Divide o valor da célula em metragem e descrição
+                const [metragem, descricao] = valorCelula.split(';');
+                // Cria uma chave única combinando metragem e descrição
+                const chaveUnica = `${metragem};${descricao}`;
+                // Adiciona a chave única ao Set
+                tiposApartamentoSet.add(chaveUnica);
+            }
+        }
+    }
+    // Converte o Set em um array de objetos ApartamentTypes
+    const tiposApartamento = Array.from(tiposApartamentoSet).map((tipo) => {
+        const [metragem, descricao] = tipo.split(';');
+        return {
+            id: (0, uuid_1.v4)(),
+            metragem,
+            description: descricao,
+            fotos: [],
+            plantas: [],
+            media360: {
+                salaDeEstar: [],
+                salaDeJantar: [],
+                cozinha: [],
+                quarto1: [],
+                quarto2: [],
+                quarto3: [],
+                banheiro1: [],
+                banheiro2: [],
+                banheiro3: [],
+                sacada: [],
+                lavanderia: [],
+                hall: []
+            }
+        };
+    });
+    return tiposApartamento;
+}
+function criarApartamentos(worksheet, tiposApartamento) {
+    const apartamentos = [];
+    // Itera sobre as linhas da planilha (a partir da segunda linha)
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+        const row = worksheet.getRow(rowNumber);
+        // Itera sobre as células da linha (a partir da segunda célula)
+        for (let colNumber = 2; colNumber <= row.cellCount; colNumber++) {
+            const valorCelula = row.getCell(colNumber).value;
+            const andar = row.getCell(1).value;
+            const firstRow = worksheet.getRow(1);
+            const final = firstRow.getCell(colNumber).value;
+            if (valorCelula && typeof valorCelula === 'string') {
+                // Divide o valor da célula em metragem e descrição
+                const [metragem, descricao] = valorCelula.split(';');
+                // Encontra o tipo de apartamento correspondente
+                const tipoApartamento = tiposApartamento.find((tipo) => tipo.metragem === metragem && tipo.description === descricao);
+                if (!tipoApartamento) {
+                    throw new Error(`Tipo de apartamento não encontrado para metragem ${metragem} e descrição ${descricao}`);
+                }
+                apartamentos.push({
+                    id: (0, uuid_1.v4)(),
+                    andar: String(andar),
+                    final: String(final),
+                    metragem,
+                    userId: null,
+                    tipoId: tipoApartamento.id
+                });
+            }
+        }
+    }
+    return apartamentos;
+}
+function importInvestmentUnidades(worksheet, id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const investmentExists = yield prisma_1.prisma.investment.findFirst({
+                where: { id: id }
+            });
+            if (!investmentExists) {
+                throw Error("O empreendimento informado não existe.");
+            }
+            const tiposApartamento = criarTiposApartamento(worksheet);
+            const apartamentos = criarApartamentos(worksheet, tiposApartamento);
+            const updatedInvestment = yield prisma_1.prisma.investment.update({
+                where: { id: id },
+                data: {
+                    apartamentTypes: tiposApartamento,
+                    apartaments: apartamentos
+                }
+            });
+            return updatedInvestment;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+}
+exports.importInvestmentUnidades = importInvestmentUnidades;
 function validatePageParams(listInvestmentData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

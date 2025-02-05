@@ -3,6 +3,7 @@ import { UsersEntity } from "../modules/registrations/entities/Users";
 import Stripe from "stripe";
 import { UserInvestmentEntity } from "../modules/investments/entities/UserInvestment";
 import { InvestmentEntity } from "../modules/investments/entities/Investments";
+import { UserProprietarioEntity } from "../modules/investments/entities/UserProprietario";
 
 interface usersResumed {
   id: UsersEntity["id"],
@@ -54,6 +55,9 @@ interface validationResponse {
 
   userInvestment?: UserInvestmentEntity
   userInvestmentList?: UserInvestmentEntity[]
+
+  userProprietario?: UserProprietarioEntity
+  userProprietarioList?: UserProprietarioEntity[]
 
   investment?: InvestmentEntity,
   investmentList?: InvestmentEntity[]

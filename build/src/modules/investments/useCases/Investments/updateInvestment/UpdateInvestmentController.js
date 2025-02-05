@@ -48,7 +48,7 @@ class UpdateInvestmentsController {
                 });
             }
             catch (error) {
-                // console.log(error)
+                console.log(error);
                 if (error instanceof client_1.Prisma.PrismaClientValidationError) {
                     console.log(error);
                     return res.status(401).json({

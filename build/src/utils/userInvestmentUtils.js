@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.validatePageParams = exports.deletePrismaUserInvestments = exports.filterPrismaUserInvestmentsByInvestmentID = exports.filterPrismaInvestmentsByInvestmentID = exports.filterPrismaInvestmentsByUserID = exports.filterPrismaUserInvestment = exports.createPrismaUserInvestment = void 0;
+exports.filterPrismaUserInvestmentsByUserID = exports.validatePageParams = exports.deletePrismaUserInvestments = exports.filterPrismaUserInvestmentsByInvestmentID = exports.filterPrismaInvestmentsByInvestmentID = exports.filterPrismaInvestmentsByUserID = exports.filterPrismaUserInvestment = exports.createPrismaUserInvestment = void 0;
 const prisma_1 = require("../prisma");
 function createPrismaUserInvestment(userInvestmentData) {
     return __awaiter(this, void 0, void 0, function* () {
@@ -144,6 +144,24 @@ function filterPrismaUserInvestmentsByInvestmentID(listUserInvestmentData) {
     });
 }
 exports.filterPrismaUserInvestmentsByInvestmentID = filterPrismaUserInvestmentsByInvestmentID;
+function filterPrismaUserInvestmentsByUserID(listUserInvestmentData) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const { userID, page, pageRange } = listUserInvestmentData;
+            // PEGA A LISTA DE INVESTIMENTOS NESSE PROJETO
+            const userInvestmentList = yield prisma_1.prisma.userInvestment.findMany({
+                where: { userID: userID },
+                skip: (page - 1) * pageRange,
+                take: pageRange,
+            });
+            return userInvestmentList;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+}
+exports.filterPrismaUserInvestmentsByUserID = filterPrismaUserInvestmentsByUserID;
 function deletePrismaUserInvestments(id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

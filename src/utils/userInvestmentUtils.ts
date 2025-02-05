@@ -9,7 +9,7 @@ async function createPrismaUserInvestment(userInvestmentData: CreateUserInvestme
 
     try {
 
-        const { userID, investmentID, investedValue, valorCorrente, dataInvestimento, documents } = userInvestmentData
+        const { userID, investmentID, investedValue, valorCorrente, dataInvestimento, documents, apartament } = userInvestmentData
 
         const userInvestment = await prisma.userInvestment.create({
             data: {
@@ -27,7 +27,7 @@ async function createPrismaUserInvestment(userInvestmentData: CreateUserInvestme
                 valorCorrente: valorCorrente,
                 documents: documents,
                 dataInvestimento: dataInvestimento,
-
+                apartament: apartament
             }
         })
 
@@ -160,18 +160,103 @@ async function filterPrismaUserInvestmentsByInvestmentID(listUserInvestmentData:
     }
 }
 
-
-async function deletePrismaUserInvestments(id: UserInvestmentEntity["id"]) {
+async function filterPrismaUserInvestmentsByUserID(listUserInvestmentData: ListUserInvestmentFormatted) {
 
     try {
-        const userInvestmentDeleted = await prisma.userInvestment.delete({ where: { id: id } })
 
-        return userInvestmentDeleted
+        const { userID, page, pageRange } = listUserInvestmentData
+
+        // PEGA A LISTA DE INVESTIMENTOS NESSE PROJETO
+        const userInvestmentList = await prisma.userInvestment.findMany({
+            where: { userID: userID },
+            skip: (page - 1) * pageRange,
+            take: pageRange,
+        })
+
+        return userInvestmentList
 
     } catch (error) {
         throw error
     }
 }
+
+
+async function deletePrismaUserInvestments(id: UserInvestmentEntity["id"]) {
+    // A função é assíncrona e recebe o ID do UserInvestment que será deletado
+  
+    try {
+      // Inicia um bloco try...catch para tratamento de erros
+  
+      // Busca o UserInvestment pelo ID fornecido
+      const userInvestmentFound = await prisma.userInvestment.findFirst({
+        where: { id: id },
+      });
+      console.log("userInvestmentFound");
+      console.log(userInvestmentFound);
+  
+      // Verifica se o UserInvestment foi encontrado
+      if (!userInvestmentFound) {
+        throw Error("Investimento não encontrado");
+      }
+  
+      // Busca o Investment (empreendimento) relacionado ao UserInvestment encontrado
+      const investment = await prisma.investment.findUnique({
+        where: { id: userInvestmentFound.investmentID }
+      });
+  
+      // Verifica se o Investment foi encontrado
+      if (!investment) {
+        throw Error("Empreendimento não encontrado.");
+      }
+  
+      // Encontra o índice do apartamento (no array apartaments do Investment) que será atualizado
+      const apartmentIndex = investment.apartaments.findIndex(
+        (apartment) => apartment.id === userInvestmentFound.apartament?.id
+      );
+  
+      // Verifica se o apartamento foi encontrado no array
+      if (apartmentIndex === -1) {
+        throw Error("Apartamento não encontrado no array.");
+      }
+  
+      // Cria um novo array de apartamentos, atualizando o userId do apartamento específico para null
+      const updatedApartaments = investment.apartaments.map(
+        (apartament) => {
+          if (apartament.id === userInvestmentFound.apartament?.id) {
+            return {
+              ...apartament, // Copia todas as propriedades do apartamento atual
+              userId: null, // Define userId como null (desassocia o usuário)
+            };
+          }
+          return apartament; // Mantém os outros apartamentos inalterados
+        }
+      );
+  
+      // Atualiza o Investment no banco de dados, substituindo o array apartaments pelo novo array
+      const investmentUpdated = await prisma.investment.update({
+        where: { id: userInvestmentFound.investmentID },
+        data: {
+          apartaments: updatedApartaments, // Substitui o array inteiro de apartamentos
+        },
+      });
+  
+      // Verifica se a atualização do Investment foi bem-sucedida
+      if (!investmentUpdated) {
+        throw Error("Ocorreu um erro ao atualizar o apartamento");
+      }
+  
+      // Deleta o UserInvestment (o registro que relaciona usuário e investimento)
+      const userInvestmentDeleted = await prisma.userInvestment.delete({
+        where: { id: id },
+      });
+  
+      // Retorna o UserInvestment que foi deletado
+      return userInvestmentDeleted;
+    } catch (error) {
+      // Captura e lança qualquer erro ocorrido no bloco try
+      throw error;
+    }
+  }
 
 
 async function validatePageParams(listUserInvestmentData: ListUserInvestmentRequestProps) {
@@ -199,4 +284,4 @@ async function validatePageParams(listUserInvestmentData: ListUserInvestmentRequ
     }
 }
 
-export { createPrismaUserInvestment, filterPrismaUserInvestment, filterPrismaInvestmentsByUserID, filterPrismaInvestmentsByInvestmentID, filterPrismaUserInvestmentsByInvestmentID, deletePrismaUserInvestments, validatePageParams }
+export { createPrismaUserInvestment, filterPrismaUserInvestment, filterPrismaInvestmentsByUserID, filterPrismaInvestmentsByInvestmentID, filterPrismaUserInvestmentsByInvestmentID, deletePrismaUserInvestments, validatePageParams, filterPrismaUserInvestmentsByUserID }

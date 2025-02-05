@@ -13,6 +13,7 @@ interface CreateUserInvestmentRequestProps {
     valorCorrente: UserInvestmentEntity["valorCorrente"]
     documents?: UserInvestmentEntity["documents"]
     dataInvestimento?: UserInvestmentEntity["dataInvestimento"]
+    apartament: UserInvestmentEntity["apartament"]
 }
 
 class CreateUserInvestmentController {

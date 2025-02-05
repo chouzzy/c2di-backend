@@ -12,6 +12,7 @@ class UserInvestmentEntity {
   valorCorrente!: UserInvestment["valorCorrente"]
   documents!: UserInvestment["documents"]
   dataInvestimento!: UserInvestment["dataInvestimento"]
+  apartament!: UserInvestment["apartament"]
 
 
   createdAt!: UserInvestment["createdAt"]

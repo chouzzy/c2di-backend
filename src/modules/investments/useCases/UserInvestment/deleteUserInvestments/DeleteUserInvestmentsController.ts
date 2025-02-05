@@ -30,6 +30,8 @@ class DeleteUserInvestmentsController {
 
         } catch (error) {
 
+            console.log(error)
+
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
                 return res.status(401).json({
                     error: {

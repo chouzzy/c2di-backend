@@ -1,0 +1,18 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.userProprietariosRoutes = void 0;
+const express_1 = require("express");
+const ListUserProprietariosController_1 = require("../modules/investments/useCases/UserProprietario/listUserProprietario/ListUserProprietariosController");
+const CreateUserProprietarioController_1 = require("../modules/investments/useCases/UserProprietario/createUserProprietario/CreateUserProprietarioController");
+const ListUserProprietarioByInvestmentsIDController_1 = require("../modules/investments/useCases/UserProprietario/listUserProprietarioByInvestmentsID/ListUserProprietarioByInvestmentsIDController");
+const DeleteUserProprietarioController_1 = require("../modules/investments/useCases/UserProprietario/deleteUserProprietario/DeleteUserProprietarioController");
+const userProprietariosRoutes = (0, express_1.Router)();
+exports.userProprietariosRoutes = userProprietariosRoutes;
+const listUserProprietarioController = new ListUserProprietariosController_1.ListUserProprietarioController();
+userProprietariosRoutes.get('/', listUserProprietarioController.handle);
+const listUserProprietarioByInvestmentsIDController = new ListUserProprietarioByInvestmentsIDController_1.ListUserProprietarioByInvestmentsIDController();
+userProprietariosRoutes.get('/byInvestment', listUserProprietarioByInvestmentsIDController.handle);
+const deleteUserProprietarioController = new DeleteUserProprietarioController_1.DeleteUserProprietariosController();
+userProprietariosRoutes.delete('/delete/:id', deleteUserProprietarioController.handle);
+const createUserProprietarioController = new CreateUserProprietarioController_1.CreateUserProprietarioController();
+userProprietariosRoutes.post('/create', createUserProprietarioController.handle);

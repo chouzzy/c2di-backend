@@ -1,7 +1,7 @@
 import { Investment, Users, UserInvestment } from "@prisma/client";
 import { prisma } from "../../../../prisma";
 import { validationResponse } from "../../../../types";
-import { createPrismaUserInvestment, deletePrismaUserInvestments, filterPrismaInvestmentsByInvestmentID, filterPrismaInvestmentsByUserID, filterPrismaUserInvestment, filterPrismaUserInvestmentsByInvestmentID } from "../../../../utils/userInvestmentUtils";
+import { createPrismaUserInvestment, deletePrismaUserInvestments, filterPrismaInvestmentsByInvestmentID, filterPrismaInvestmentsByUserID, filterPrismaUserInvestment, filterPrismaUserInvestmentsByInvestmentID, filterPrismaUserInvestmentsByUserID } from "../../../../utils/userInvestmentUtils";
 import { UserInvestmentEntity } from "../../entities/UserInvestment";
 import { CreateUserInvestmentRequestProps } from "../../useCases/UserInvestment/createUserInvestment/CreateUserInvestmentController";
 import { ListUserInvestmentRequestProps } from "../../useCases/UserInvestment/listUserInvestments/ListUserInvestmentsController";
@@ -61,6 +61,26 @@ class UserInvestmentRepository implements IUserInvestmentRepository {
             }
 
             const filteredUsersByInvestmentIDs = await filterPrismaUserInvestmentsByInvestmentID(listUserInvestmentData)
+
+            return filteredUsersByInvestmentIDs
+
+
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async filterUserInvestmentByUserID(listUserInvestmentData: ListUserInvestmentFormatted): Promise<UserInvestment[]> {
+
+        try {
+
+            const { userID, investmentID } = listUserInvestmentData
+
+            if (!userID) {
+                throw Error("ID do investimento inválido")
+            }
+
+            const filteredUsersByInvestmentIDs = await filterPrismaUserInvestmentsByUserID(listUserInvestmentData)
 
             return filteredUsersByInvestmentIDs
 

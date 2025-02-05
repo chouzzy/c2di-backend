@@ -68,7 +68,6 @@ const createInvestmentSchema = yup.object({
         description: yup.string().optional(),
     }))
         .required("As imagens são obrigatórias."),
-    investmentValue: yup.string().required("O valor do investimento é obrigatório."),
     companyName: yup.string().required("O nome da empresa é obrigatório."),
     finishDate: yup.string().nullable(),
     buildingStatus: yup.string().required("O status da construção é obrigatório."),

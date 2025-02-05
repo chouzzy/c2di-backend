@@ -52,6 +52,21 @@ class UserInvestmentRepository {
             }
         });
     }
+    filterUserInvestmentByUserID(listUserInvestmentData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const { userID, investmentID } = listUserInvestmentData;
+                if (!userID) {
+                    throw Error("ID do investimento inválido");
+                }
+                const filteredUsersByInvestmentIDs = yield (0, userInvestmentUtils_1.filterPrismaUserInvestmentsByUserID)(listUserInvestmentData);
+                return filteredUsersByInvestmentIDs;
+            }
+            catch (error) {
+                throw error;
+            }
+        });
+    }
     createUserInvestment(userInvestmentData) {
         return __awaiter(this, void 0, void 0, function* () {
             const userInvestment = yield (0, userInvestmentUtils_1.createPrismaUserInvestment)(userInvestmentData);

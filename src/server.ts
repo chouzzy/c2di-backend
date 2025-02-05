@@ -9,6 +9,8 @@ import specs from '../swagger';
 import { ProjectProgressInvestmentPartnerController } from './modules/investments/useCases/Investments/investmentProgressImport/InvestmentProgressImportController';
 import formidable from 'formidable';
 import { checkJwtFromCookie, jwtCheck } from './modules/registrations/middleware/auth0Check';
+import { ProjectUnidadesController } from './modules/investments/useCases/Investments/investmentUnidadesImport/InvestmentUnidadesImportController';
+import { ProjectMetroQuadradoController } from './modules/investments/useCases/Investments/investmentMetroQuadradoImport/InvestmentMetroQuadradoImportController';
 var cookieParser = require('cookie-parser')
 
 
@@ -20,9 +22,15 @@ app.use(cors({
     credentials: true, // Permita o envio de credenciais (cookies, headers de autorização)
 }));
 
-const projectProgressInvestmentPartnerController = new ProjectProgressInvestmentPartnerController();
 
+const projectProgressInvestmentPartnerController = new ProjectProgressInvestmentPartnerController();
 app.post('/investments/progress/import/:id', projectProgressInvestmentPartnerController.handle);
+
+const projectUnidadesController = new ProjectUnidadesController();
+app.post('/investments/unidades/import/:id', projectUnidadesController.handle);
+
+const projectMetroQuadradoController = new ProjectMetroQuadradoController();
+app.post('/investments/metroQuadrado/import/:id', projectMetroQuadradoController.handle);
 
 app.use(express.json()); // Define o body parser para JSON após a rota de upload
 app.use(cookieParser());

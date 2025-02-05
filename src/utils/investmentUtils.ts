@@ -6,6 +6,7 @@ import { ListInvestmentProps } from "../modules/investments/useCases/Investments
 import { UpdateInvestmentRequestProps } from "../modules/investments/useCases/Investments/updateInvestment/UpdateInvestmentController";
 import { prisma } from "../prisma";
 import { Investment } from "@prisma/client";
+import { v4 as uuidv4 } from 'uuid';
 
 
 async function createPrismaInvestment(investmentData: CreateInvestmentRequestProps) {
@@ -44,7 +45,7 @@ async function createPrismaInvestment(investmentData: CreateInvestmentRequestPro
         const { buildingTotalProgress, financialTotalProgress, buildingProgress } = investmentData
         if (!buildingTotalProgress) { investmentData.buildingTotalProgress = [{ data: new Date(), previsto: 0, realizado: 0 }] }
         if (!financialTotalProgress) { investmentData.financialTotalProgress = [{ data: new Date(), previsto: 0, realizado: 0 }] }
-        
+
         if (!buildingProgress) {
             investmentData.buildingProgress = {
                 acabamento: 0,
@@ -377,6 +378,219 @@ async function importPrismaInvestmentProgress(worksheet: Worksheet, id: Investme
     }
 }
 
+function criarTiposApartamento(worksheet: Worksheet): Investment["apartamentTypes"] {
+    const tiposApartamentoSet = new Set(); // Cria um Set para armazenar os tipos únicos
+
+    // Itera sobre as linhas da planilha (a partir da segunda linha)
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+        const row = worksheet.getRow(rowNumber);
+
+        // Itera sobre as células da linha (a partir da segunda célula)
+        for (let colNumber = 2; colNumber <= row.cellCount; colNumber++) {
+            const valorCelula = row.getCell(colNumber).value;
+
+            if (valorCelula && typeof valorCelula === 'string') {
+                // Divide o valor da célula em metragem e descrição
+                const [metragem, descricao] = valorCelula.split(';');
+
+                // Cria uma chave única combinando metragem e descrição
+                const chaveUnica = `${metragem};${descricao}`;
+
+                // Adiciona a chave única ao Set
+                tiposApartamentoSet.add(chaveUnica);
+            }
+        }
+    }
+
+    // Converte o Set em um array de objetos ApartamentTypes
+    const tiposApartamento: Investment["apartamentTypes"] = Array.from(tiposApartamentoSet).map((tipo: any) => {
+        const [metragem, descricao] = tipo.split(';');
+        return {
+            id: uuidv4(),
+            metragem,
+            description: descricao,
+            fotos: [],
+            plantas: [],
+            media360: {
+                salaDeEstar: [],
+                salaDeJantar: [],
+                cozinha: [],
+                quarto1: [],
+                quarto2: [],
+                quarto3: [],
+                banheiro1: [],
+                banheiro2: [],
+                banheiro3: [],
+                sacada: [],
+                lavanderia: [],
+                hall: []
+            }
+        };
+    });
+
+    return tiposApartamento;
+}
+
+function criarApartamentos(worksheet: Worksheet, tiposApartamento: Investment["apartamentTypes"]): Investment['apartaments'] {
+
+    const apartamentos: Investment['apartaments'] = [];
+
+    // Itera sobre as linhas da planilha (a partir da segunda linha)
+    for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+        const row = worksheet.getRow(rowNumber);
+
+        // Itera sobre as células da linha (a partir da segunda célula)
+        for (let colNumber = 2; colNumber <= row.cellCount; colNumber++) {
+            const valorCelula = row.getCell(colNumber).value;
+            const andar = row.getCell(1).value
+            const firstRow = worksheet.getRow(1)
+            const final = firstRow.getCell(colNumber).value
+
+            if (valorCelula && typeof valorCelula === 'string') {
+                // Divide o valor da célula em metragem e descrição
+                const [metragem, descricao] = valorCelula.split(';');
+
+                // Encontra o tipo de apartamento correspondente
+                const tipoApartamento = tiposApartamento.find(
+                    (tipo) => tipo.metragem === metragem && tipo.description === descricao
+                );
+
+                if (!tipoApartamento) {
+                    throw new Error(`Tipo de apartamento não encontrado para metragem ${metragem} e descrição ${descricao}`);
+                }
+
+                apartamentos.push({
+                    id: uuidv4(),
+                    andar: String(andar), // Converte o número do andar para string
+                    final: String(final), // Converte o número do final para string
+                    metragem,
+                    userId: null, // userId obtido da sua lógica
+                    tipoId: tipoApartamento.id
+                });
+            }
+        }
+
+    }
+
+    return apartamentos;
+}
+
+async function importInvestmentUnidades(worksheet: Worksheet, id: Investment["id"]) {
+
+    try {
+
+        const investmentExists = await prisma.investment.findFirst({
+            where: { id: id }
+        })
+
+        if (!investmentExists) {
+            throw Error("O empreendimento informado não existe.")
+        }
+
+        const tiposApartamento = criarTiposApartamento(worksheet);
+        const apartamentos = criarApartamentos(worksheet, tiposApartamento);
+
+        const updatedInvestment = await prisma.investment.update({
+            where: { id: id },
+            data: {
+                apartamentTypes: tiposApartamento,
+                apartaments: apartamentos
+            }
+        })
+
+        return updatedInvestment
+    } catch (error) {
+        throw error
+    }
+}
+
+function isValidDate(date: Date) {
+    return date instanceof Date && !isNaN(date.getTime());
+}
+
+function converterExcelEmArrayMetroQuadrado(worksheet: Worksheet): Investment["valorMetroQuadrado"] {
+    const resultArray: Investment["valorMetroQuadrado"] = [];
+
+
+    worksheet.eachRow((row, rowNumber) => {
+        // Ignora a primeira linha (cabeçalho)
+        if (rowNumber === 1) return;
+
+        const id = uuidv4();
+
+        // Obtém o valor da célula da coluna "Valor" (coluna A neste caso)
+        const valorCell = row.getCell(1).text;
+        console.log('valorCell')
+        console.log(valorCell)
+        if (!valorCell) {
+            console.error(`Valor ausente na linha ${rowNumber}, coluna "Valor".`);
+            return; // Ou lançar um erro: throw new Error(`Valor ausente na linha ${rowNumber}`);
+        }
+        
+        const valor = parseFloat(
+            valorCell.toString().replace("R$ ", "").replace(",", ".")
+        );
+
+        if (isNaN(valor)) {
+            console.error(`Valor inválido na linha ${rowNumber}, coluna "Valor": ${valorCell}`);
+            return; // Ou lançar um erro
+        }
+
+        // Obtém o valor da célula da coluna "Data" (coluna B neste caso)
+        const dataCell = row.getCell(2).text;
+
+        if (!dataCell) {
+            console.error(`Data ausente na linha ${rowNumber}, coluna "Data".`);
+            return; // Ou lançar um erro
+        }
+
+        const dataOriginal = new Date(dataCell.toString());
+
+        if (!isValidDate(dataOriginal)) {
+            console.error(`Data inválida na linha ${rowNumber}: ${dataCell}`);
+            return; // Ou lançar um erro
+        }
+
+        const data = new Date(
+            dataOriginal.getFullYear(),
+            dataOriginal.getMonth(),
+            dataOriginal.getDate()
+        );
+
+        resultArray.push({ id, valor, data });
+    });
+
+    return resultArray
+}
+
+async function importInvestmentMetroQuadrado(worksheet: Worksheet, id: Investment["id"]) {
+
+    try {
+
+        const investmentExists = await prisma.investment.findFirst({
+            where: { id: id }
+        })
+
+        if (!investmentExists) {
+            throw Error("O empreendimento informado não existe.")
+        }
+
+        const valorMetroQuadrado = converterExcelEmArrayMetroQuadrado(worksheet);
+
+
+        const updatedInvestment = await prisma.investment.update({
+            where: { id: id },
+            data: {
+                valorMetroQuadrado: valorMetroQuadrado,
+            }
+        })
+
+        return updatedInvestment
+    } catch (error) {
+        throw error
+    }
+}
+
 
 async function validatePageParams(listInvestmentData: ListInvestmentRequestProps) {
 
@@ -403,4 +617,4 @@ async function validatePageParams(listInvestmentData: ListInvestmentRequestProps
     }
 }
 
-export { createPrismaInvestment, filterPrismaInvestment, updatePrismaInvestment, deletePrismaInvestment, filterPrismaInvestmentByID, deletePrismaInvestmentImage, validatePageParams, deletePrismaInvestmentDocument, deletePrismaInvestmentPartner, importPrismaInvestmentProgress }
+export { createPrismaInvestment, filterPrismaInvestment, updatePrismaInvestment, deletePrismaInvestment, filterPrismaInvestmentByID, deletePrismaInvestmentImage, validatePageParams, deletePrismaInvestmentDocument, deletePrismaInvestmentPartner, importPrismaInvestmentProgress, importInvestmentUnidades, importInvestmentMetroQuadrado }

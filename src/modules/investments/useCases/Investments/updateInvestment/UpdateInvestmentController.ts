@@ -36,7 +36,7 @@ interface UpdateInvestmentRequestProps {
     historicoDeValorizacao?: InvestmentEntity["historicoDeValorizacao"]
     financialTotalProgress?: InvestmentEntity["financialTotalProgress"]
     buildingTotalProgress?: InvestmentEntity["buildingTotalProgress"]
-
+    valorMetroQuadrado?: InvestmentEntity["valorMetroQuadrado"]
 }
 
 class UpdateInvestmentsController {
@@ -46,7 +46,7 @@ class UpdateInvestmentsController {
 
             const { id } = req.params
             const investmentData: UpdateInvestmentRequestProps = req.body
-            const { partners, documents, images } = investmentData
+            const { partners, documents, images, valorMetroQuadrado } = investmentData
 
             if (partners) {
                 partners.map((partner) => {
@@ -66,6 +66,12 @@ class UpdateInvestmentsController {
                 })
             }
 
+            if (valorMetroQuadrado) {
+                valorMetroQuadrado.map((valorMetroQuadrado) => {
+                    valorMetroQuadrado.id = uuidv4()
+                })
+            }
+
             await checkBody(investmentData)
 
             /// instanciação da classe do caso de uso
@@ -80,7 +86,7 @@ class UpdateInvestmentsController {
 
         } catch (error) {
 
-            // console.log(error)
+            console.log(error)
             if (error instanceof Prisma.PrismaClientValidationError) {
                 console.log(error)
                 return res.status(401).json({

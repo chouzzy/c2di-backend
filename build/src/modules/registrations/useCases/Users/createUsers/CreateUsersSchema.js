@@ -50,6 +50,6 @@ const createUsersSchema = yup.object({
     }).nullable(),
     investorProfileName: yup.string().optional(),
     investorProfileDescription: yup.string().optional(),
-    role: yup.mixed().oneOf(["INVESTOR", "PROJECT_MANAGER", "ADMINISTRATOR"]).required("A role é obrigatória")
+    role: yup.mixed().oneOf(["INVESTOR", "PROJECT_MANAGER", "ADMINISTRATOR", "PROPRIETARIO"]).required("A role é obrigatória")
 }).noUnknown(true, "Campos desconhecidos no corpo da requisição.").strict();
 exports.createUsersSchema = createUsersSchema;

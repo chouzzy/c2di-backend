@@ -1,6 +1,6 @@
 import { Investment, Prisma } from "@prisma/client"
 import { validationResponse } from "../../../../types"
-import { createPrismaInvestment, deletePrismaInvestment, deletePrismaInvestmentDocument, deletePrismaInvestmentImage, deletePrismaInvestmentPartner, filterPrismaInvestment, filterPrismaInvestmentByID, importPrismaInvestmentProgress, updatePrismaInvestment } from "../../../../utils/investmentUtils"
+import { createPrismaInvestment, deletePrismaInvestment, deletePrismaInvestmentDocument, deletePrismaInvestmentImage, deletePrismaInvestmentPartner, filterPrismaInvestment, filterPrismaInvestmentByID, importInvestmentMetroQuadrado, importInvestmentUnidades, importPrismaInvestmentProgress, updatePrismaInvestment } from "../../../../utils/investmentUtils"
 import { CreateInvestmentRequestProps } from "../../useCases/Investments/createInvestment/CreateInvestmentController"
 import { ListInvestmentRequestProps } from "../../useCases/Investments/listInvestment/ListInvestmentsController"
 import { ListInvestmentProps } from "../../useCases/Investments/listInvestment/ListInvestmentsUseCase"
@@ -121,6 +121,26 @@ class InvestmentRepository implements IInvestmentRepository {
     async importInvestmentProgress(worksheet: Worksheet, id:Investment["id"]): Promise<Investment> {
         try {
             const investment = importPrismaInvestmentProgress(worksheet, id)
+
+            return investment
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async importUnidades(worksheet: Worksheet, id:Investment["id"]): Promise<Investment> {
+        try {
+            const investment = importInvestmentUnidades(worksheet, id)
+
+            return investment
+        } catch (error) {
+            throw error
+        }
+    }
+
+    async importMetroQuadrado(worksheet: Worksheet, id:Investment["id"]): Promise<Investment> {
+        try {
+            const investment = importInvestmentMetroQuadrado(worksheet, id)
 
             return investment
         } catch (error) {

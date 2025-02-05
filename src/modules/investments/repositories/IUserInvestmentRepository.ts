@@ -14,6 +14,8 @@ interface IUserInvestmentRepository {
     filterUserInvestment(listUserInvestmentData: ListUserInvestmentFormatted): Promise<Investment[] | Users[] | UserInvestment[] | undefined>
 
     filterUserInvestmentByInvestmentID(listUserInvestmentData: ListUserInvestmentFormatted): Promise<UserInvestment[]>
+    
+    filterUserInvestmentByUserID(listUserInvestmentData: ListUserInvestmentFormatted): Promise<UserInvestment[]>
 }
 
 export { IUserInvestmentRepository }
