@@ -8,7 +8,7 @@ class DeleteInvestmentImageUseCase {
     constructor(
         private InvestmentRepository: IInvestmentRepository) {}
 
-    async execute(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["images"][0]["id"]): Promise<Investment["images"]> {
+    async execute(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["photos"][0]["images"][0]["id"]): Promise<Investment> {
         
         const deletedUsers = await this.InvestmentRepository.deleteInvestmentImage(investmentID, id)
         

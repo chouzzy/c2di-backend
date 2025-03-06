@@ -40,6 +40,11 @@ class InvestmentEntity {
   apartaments!: Investment['apartaments'][]
   valorMetroQuadrado!: Investment["valorMetroQuadrado"]
 
+  constructionCompany!: Investment["constructionCompany"]
+
+  photos!: Investment["photos"]
+
+
   createdAt!: Investment["createdAt"];
   updatedAt?: Investment["updatedAt"];
 }

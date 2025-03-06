@@ -32,6 +32,7 @@ class DeleteUserInvestmentsController {
                 });
             }
             catch (error) {
+                console.log(error);
                 if (error instanceof client_1.Prisma.PrismaClientKnownRequestError) {
                     return res.status(401).json({
                         error: {

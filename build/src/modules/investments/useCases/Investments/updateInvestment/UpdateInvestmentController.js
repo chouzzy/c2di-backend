@@ -21,7 +21,7 @@ class UpdateInvestmentsController {
             try {
                 const { id } = req.params;
                 const investmentData = req.body;
-                const { partners, documents, images } = investmentData;
+                const { partners, documents, images, valorMetroQuadrado } = investmentData;
                 if (partners) {
                     partners.map((partner) => {
                         partner.id = (0, uuid_1.v4)();
@@ -35,6 +35,11 @@ class UpdateInvestmentsController {
                 if (images) {
                     images.map((img) => {
                         img.id = (0, uuid_1.v4)();
+                    });
+                }
+                if (valorMetroQuadrado) {
+                    valorMetroQuadrado.map((valorMetroQuadrado) => {
+                        valorMetroQuadrado.id = (0, uuid_1.v4)();
                     });
                 }
                 yield (0, UpdateInvestmentCheck_1.checkBody)(investmentData);

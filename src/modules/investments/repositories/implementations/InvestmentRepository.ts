@@ -80,13 +80,13 @@ class InvestmentRepository implements IInvestmentRepository {
     }
 
 
-    async deleteInvestmentImage(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["images"][0]["id"]): Promise<Investment["images"]> {
+    async deleteInvestmentImage(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["photos"][0]["images"][0]["id"]): Promise<Investment> {
 
         try {
 
-            const deletedInvestment = await deletePrismaInvestmentImage(investmentID, id)
+            const updatedInvestment = await deletePrismaInvestmentImage(investmentID, id)
 
-            return deletedInvestment
+            return updatedInvestment
 
         } catch (error) {
             throw error

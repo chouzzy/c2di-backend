@@ -148,10 +148,58 @@ exports.filterPrismaUserProprietariosByInvestmentID = filterPrismaUserProprietar
 function deletePrismaUserProprietarios(id) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const userProprietarioDeleted = yield prisma_1.prisma.userProprietario.delete({ where: { id: id } });
+            // Inicia um bloco try...catch para tratamento de erros
+            // Busca o UserInvestment pelo ID fornecido
+            const userProprietarioFound = yield prisma_1.prisma.userProprietario.findFirst({
+                where: { id: id },
+            });
+            console.log("userProprietarioFound");
+            console.log(userProprietarioFound);
+            // Verifica se o UserInvestment foi encontrado
+            if (!userProprietarioFound) {
+                throw Error("Investimento não encontrado");
+            }
+            // Busca o Investment (empreendimento) relacionado ao UserInvestment encontrado
+            const investment = yield prisma_1.prisma.investment.findUnique({
+                where: { id: userProprietarioFound.investmentID }
+            });
+            // Verifica se o Investment foi encontrado
+            if (!investment) {
+                throw Error("Empreendimento não encontrado.");
+            }
+            // Encontra o índice do apartamento (no array apartaments do Investment) que será atualizado
+            const apartmentIndex = investment.apartaments.findIndex((apartment) => apartment.id === userProprietarioFound.apartamentID);
+            // Verifica se o apartamento foi encontrado no array
+            if (apartmentIndex === -1) {
+                throw Error("Apartamento não encontrado no array.");
+            }
+            // Cria um novo array de apartamentos, atualizando o userId do apartamento específico para null
+            const updatedApartaments = investment.apartaments.map((apartament) => {
+                if (apartament.id === userProprietarioFound.apartamentID) {
+                    return Object.assign(Object.assign({}, apartament), { userId: null });
+                }
+                return apartament; // Mantém os outros apartamentos inalterados
+            });
+            // Atualiza o Investment no banco de dados, substituindo o array apartaments pelo novo array
+            const investmentUpdated = yield prisma_1.prisma.investment.update({
+                where: { id: userProprietarioFound.investmentID },
+                data: {
+                    apartaments: updatedApartaments, // Substitui o array inteiro de apartamentos
+                },
+            });
+            // Verifica se a atualização do Investment foi bem-sucedida
+            if (!investmentUpdated) {
+                throw Error("Ocorreu um erro ao atualizar o apartamento");
+            }
+            // Deleta o UserInvestment (o registro que relaciona usuário e investimento)
+            const userProprietarioDeleted = yield prisma_1.prisma.userProprietario.delete({
+                where: { id: id },
+            });
+            // Retorna o UserInvestment que foi deletado
             return userProprietarioDeleted;
         }
         catch (error) {
+            // Captura e lança qualquer erro ocorrido no bloco try
             throw error;
         }
     });

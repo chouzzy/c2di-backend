@@ -122,7 +122,7 @@ model Investment {
   companyName      String //nome da construtora
   partners         Partners[] // fornecedores principais
   finishDate       DateTime? // data de entrega
-  buildingStatus   String // status da construção -- vai abrir em uma nova tabela
+  buildingStatus   BuildingStatus @default(LANCAMENTO) // status da construção -- vai abrir em uma nova tabela
   buildingProgress BuildingProgress? // status da construção -- vai abrir em uma nova tabela
   investmentDate   DateTime? // data da compra do investidor
 
@@ -139,7 +139,11 @@ model Investment {
   apartaments        Apartaments[]
   valorMetroQuadrado ValorMetroQuadrado[]
 
+  constructionCompany String
+
   projectManagerID String //ID Do criador do projeto
+
+  photos PhotosGroup[]
 
   active Boolean @default(true) //Status do projeto (arquivado ou ativo)
 
@@ -147,6 +151,38 @@ model Investment {
   updatedAt DateTime @updatedAt
 
   @@map("investments")
+}
+
+
+type PhotosGroup {
+  category PhotosLabel
+  images   Photos[]
+}
+
+type Photos {
+  id          String
+  url         String
+  title       String? // Título da imagem (opcional)
+  description String? // Descrição da imagem (opcional)
+}
+
+enum PhotosLabel {
+  CAPA
+  DESTAQUES
+  FACHADA
+  DECORADO
+  INTERNO
+  EXTERNO
+  PLANTAS
+  PANORAMICAS
+  MEDIA360
+}
+
+enum BuildingStatus {
+  LANCAMENTO
+  CONSTRUCAO
+  FINALIZACAO
+  FINALIZADO
 }
 
 enum ProjectType {

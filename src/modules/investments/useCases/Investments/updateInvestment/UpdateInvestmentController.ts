@@ -22,6 +22,7 @@ interface UpdateInvestmentRequestProps {
     address?: InvestmentEntity["address"];
     documents?: InvestmentEntity["documents"];
     images?: InvestmentEntity["images"];
+    photos?: InvestmentEntity["photos"];
     investmentValue?: InvestmentEntity["investmentValue"];
     companyName?: InvestmentEntity["companyName"];
     partners?: InvestmentEntity["partners"];
@@ -37,6 +38,8 @@ interface UpdateInvestmentRequestProps {
     financialTotalProgress?: InvestmentEntity["financialTotalProgress"]
     buildingTotalProgress?: InvestmentEntity["buildingTotalProgress"]
     valorMetroQuadrado?: InvestmentEntity["valorMetroQuadrado"]
+    constructionCompany?: InvestmentEntity["constructionCompany"]
+
 }
 
 class UpdateInvestmentsController {
@@ -46,7 +49,7 @@ class UpdateInvestmentsController {
 
             const { id } = req.params
             const investmentData: UpdateInvestmentRequestProps = req.body
-            const { partners, documents, images, valorMetroQuadrado } = investmentData
+            const { partners, documents, images, valorMetroQuadrado, photos } = investmentData
 
             if (partners) {
                 partners.map((partner) => {
@@ -71,6 +74,9 @@ class UpdateInvestmentsController {
                     valorMetroQuadrado.id = uuidv4()
                 })
             }
+
+            console.log('photos')
+            console.log(photos)
 
             await checkBody(investmentData)
 

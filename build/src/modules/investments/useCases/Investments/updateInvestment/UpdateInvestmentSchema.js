@@ -110,6 +110,10 @@ const updateInvestmentSchema = yup.object({
         metragem: yup.string().required('Metragem é obrigatória'),
         userId: yup.string().nullable(),
         tipoId: yup.string().required('Tipo de apartamento é obrigatório'),
-    }))
+    })),
+    valorMetroQuadrado: yup.array().of(yup.object().shape({
+        id: yup.string().required('ID é obrigatório'),
+        valor: yup.string().required('O valor é obrigatório'),
+    })),
 }).noUnknown(true, "Campos desconhecidos no corpo da requisição.").strict();
 exports.updateInvestmentSchema = updateInvestmentSchema;

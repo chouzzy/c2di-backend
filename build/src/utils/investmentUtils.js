@@ -9,7 +9,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.importInvestmentUnidades = exports.importPrismaInvestmentProgress = exports.deletePrismaInvestmentPartner = exports.deletePrismaInvestmentDocument = exports.validatePageParams = exports.deletePrismaInvestmentImage = exports.filterPrismaInvestmentByID = exports.deletePrismaInvestment = exports.updatePrismaInvestment = exports.filterPrismaInvestment = exports.createPrismaInvestment = void 0;
+exports.importInvestmentMetroQuadrado = exports.importInvestmentUnidades = exports.importPrismaInvestmentProgress = exports.deletePrismaInvestmentPartner = exports.deletePrismaInvestmentDocument = exports.validatePageParams = exports.deletePrismaInvestmentImage = exports.filterPrismaInvestmentByID = exports.deletePrismaInvestment = exports.updatePrismaInvestment = exports.filterPrismaInvestment = exports.createPrismaInvestment = void 0;
 const prisma_1 = require("../prisma");
 const uuid_1 = require("uuid");
 function createPrismaInvestment(investmentData) {
@@ -433,6 +433,69 @@ function importInvestmentUnidades(worksheet, id) {
     });
 }
 exports.importInvestmentUnidades = importInvestmentUnidades;
+function isValidDate(date) {
+    return date instanceof Date && !isNaN(date.getTime());
+}
+function converterExcelEmArrayMetroQuadrado(worksheet) {
+    const resultArray = [];
+    worksheet.eachRow((row, rowNumber) => {
+        // Ignora a primeira linha (cabeçalho)
+        if (rowNumber === 1)
+            return;
+        const id = (0, uuid_1.v4)();
+        // Obtém o valor da célula da coluna "Valor" (coluna A neste caso)
+        const valorCell = row.getCell(1).text;
+        console.log('valorCell');
+        console.log(valorCell);
+        if (!valorCell) {
+            console.error(`Valor ausente na linha ${rowNumber}, coluna "Valor".`);
+            return; // Ou lançar um erro: throw new Error(`Valor ausente na linha ${rowNumber}`);
+        }
+        const valor = parseFloat(valorCell.toString().replace("R$ ", "").replace(",", "."));
+        if (isNaN(valor)) {
+            console.error(`Valor inválido na linha ${rowNumber}, coluna "Valor": ${valorCell}`);
+            return; // Ou lançar um erro
+        }
+        // Obtém o valor da célula da coluna "Data" (coluna B neste caso)
+        const dataCell = row.getCell(2).text;
+        if (!dataCell) {
+            console.error(`Data ausente na linha ${rowNumber}, coluna "Data".`);
+            return; // Ou lançar um erro
+        }
+        const dataOriginal = new Date(dataCell.toString());
+        if (!isValidDate(dataOriginal)) {
+            console.error(`Data inválida na linha ${rowNumber}: ${dataCell}`);
+            return; // Ou lançar um erro
+        }
+        const data = new Date(dataOriginal.getFullYear(), dataOriginal.getMonth(), dataOriginal.getDate());
+        resultArray.push({ id, valor, data });
+    });
+    return resultArray;
+}
+function importInvestmentMetroQuadrado(worksheet, id) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const investmentExists = yield prisma_1.prisma.investment.findFirst({
+                where: { id: id }
+            });
+            if (!investmentExists) {
+                throw Error("O empreendimento informado não existe.");
+            }
+            const valorMetroQuadrado = converterExcelEmArrayMetroQuadrado(worksheet);
+            const updatedInvestment = yield prisma_1.prisma.investment.update({
+                where: { id: id },
+                data: {
+                    valorMetroQuadrado: valorMetroQuadrado,
+                }
+            });
+            return updatedInvestment;
+        }
+        catch (error) {
+            throw error;
+        }
+    });
+}
+exports.importInvestmentMetroQuadrado = importInvestmentMetroQuadrado;
 function validatePageParams(listInvestmentData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {

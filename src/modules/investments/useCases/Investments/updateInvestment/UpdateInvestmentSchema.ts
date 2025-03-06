@@ -1,5 +1,12 @@
 import * as yup from "yup";
 
+const photoSchema = yup.object().shape({
+  id: yup.string().required().uuid(),
+  url: yup.string().required().url(),
+  title: yup.string().optional(), // title é opcional
+  description: yup.string().optional(), // description é opcional
+});
+
 const updateInvestmentSchema = yup.object({
   title: yup.string(),
   description: yup.string(),
@@ -27,6 +34,7 @@ const updateInvestmentSchema = yup.object({
     state: yup.string(),
     zipCode: yup.string(),
   }),
+
   documents: yup
     .array()
     .of(
@@ -35,6 +43,7 @@ const updateInvestmentSchema = yup.object({
         url: yup.string(),
       }),
     ),
+
   images: yup
     .array()
     .of(
@@ -43,6 +52,15 @@ const updateInvestmentSchema = yup.object({
         description: yup.string(), // Removido o optional()
       }),
     ),
+
+  photos: yup.array()
+    .of(
+      yup.object().shape({
+        category: yup.string().required(),
+        images: yup.array().of(photoSchema),
+      })
+    ),
+
   investmentValue: yup.string(), // Número positivo
   companyName: yup.string(),
 
@@ -56,7 +74,7 @@ const updateInvestmentSchema = yup.object({
   ).nullable(),
 
   finishDate: yup.string().nullable(),
-  buildingStatus: yup.string(),
+  buildingStatus: yup.string().oneOf(["LANCAMENTO", "CONSTRUCAO", "FINALIZACAO", "FINALIZADO"]),
   investmentDate: yup.string(),
   predictedCost: yup.object().shape({
     foundation: yup.number(),
@@ -100,6 +118,8 @@ const updateInvestmentSchema = yup.object({
     id: yup.string().required('ID é obrigatório'),
     valor: yup.string().required('O valor é obrigatório'),
   })),
+  constructionCompany: yup.string()
+
 }).noUnknown(true, "Campos desconhecidos no corpo da requisição.").strict();
 
 export { updateInvestmentSchema };

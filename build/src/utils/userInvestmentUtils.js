@@ -14,7 +14,7 @@ const prisma_1 = require("../prisma");
 function createPrismaUserInvestment(userInvestmentData) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const { userID, investmentID, investedValue, valorCorrente, dataInvestimento, documents } = userInvestmentData;
+            const { userID, investmentID, investedValue, valorCorrente, dataInvestimento, documents, apartament } = userInvestmentData;
             const userInvestment = yield prisma_1.prisma.userInvestment.create({
                 data: {
                     user: {
@@ -31,6 +31,7 @@ function createPrismaUserInvestment(userInvestmentData) {
                     valorCorrente: valorCorrente,
                     documents: documents,
                     dataInvestimento: dataInvestimento,
+                    apartament: apartament
                 }
             });
             return userInvestment;
@@ -164,11 +165,61 @@ function filterPrismaUserInvestmentsByUserID(listUserInvestmentData) {
 exports.filterPrismaUserInvestmentsByUserID = filterPrismaUserInvestmentsByUserID;
 function deletePrismaUserInvestments(id) {
     return __awaiter(this, void 0, void 0, function* () {
+        // A função é assíncrona e recebe o ID do UserInvestment que será deletado
         try {
-            const userInvestmentDeleted = yield prisma_1.prisma.userInvestment.delete({ where: { id: id } });
+            // Inicia um bloco try...catch para tratamento de erros
+            // Busca o UserInvestment pelo ID fornecido
+            const userInvestmentFound = yield prisma_1.prisma.userInvestment.findFirst({
+                where: { id: id },
+            });
+            console.log("userInvestmentFound");
+            console.log(userInvestmentFound);
+            // Verifica se o UserInvestment foi encontrado
+            if (!userInvestmentFound) {
+                throw Error("Investimento não encontrado");
+            }
+            // Busca o Investment (empreendimento) relacionado ao UserInvestment encontrado
+            const investment = yield prisma_1.prisma.investment.findUnique({
+                where: { id: userInvestmentFound.investmentID }
+            });
+            // Verifica se o Investment foi encontrado
+            if (!investment) {
+                throw Error("Empreendimento não encontrado.");
+            }
+            // Encontra o índice do apartamento (no array apartaments do Investment) que será atualizado
+            const apartmentIndex = investment.apartaments.findIndex((apartment) => { var _a; return apartment.id === ((_a = userInvestmentFound.apartament) === null || _a === void 0 ? void 0 : _a.id); });
+            // Verifica se o apartamento foi encontrado no array
+            if (apartmentIndex === -1) {
+                throw Error("Apartamento não encontrado no array.");
+            }
+            // Cria um novo array de apartamentos, atualizando o userId do apartamento específico para null
+            const updatedApartaments = investment.apartaments.map((apartament) => {
+                var _a;
+                if (apartament.id === ((_a = userInvestmentFound.apartament) === null || _a === void 0 ? void 0 : _a.id)) {
+                    return Object.assign(Object.assign({}, apartament), { userId: null });
+                }
+                return apartament; // Mantém os outros apartamentos inalterados
+            });
+            // Atualiza o Investment no banco de dados, substituindo o array apartaments pelo novo array
+            const investmentUpdated = yield prisma_1.prisma.investment.update({
+                where: { id: userInvestmentFound.investmentID },
+                data: {
+                    apartaments: updatedApartaments, // Substitui o array inteiro de apartamentos
+                },
+            });
+            // Verifica se a atualização do Investment foi bem-sucedida
+            if (!investmentUpdated) {
+                throw Error("Ocorreu um erro ao atualizar o apartamento");
+            }
+            // Deleta o UserInvestment (o registro que relaciona usuário e investimento)
+            const userInvestmentDeleted = yield prisma_1.prisma.userInvestment.delete({
+                where: { id: id },
+            });
+            // Retorna o UserInvestment que foi deletado
             return userInvestmentDeleted;
         }
         catch (error) {
+            // Captura e lança qualquer erro ocorrido no bloco try
             throw error;
         }
     });

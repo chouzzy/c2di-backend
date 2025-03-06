@@ -31,6 +31,7 @@ interface CreateInvestmentRequestProps {
     predictedCost: InvestmentEntity["predictedCost"];
     realizedCost: InvestmentEntity["realizedCost"];
     projectManagerID: InvestmentEntity["projectManagerID"]
+    constructionCompany: InvestmentEntity["constructionCompany"]
     buildingProgress?: InvestmentEntity["buildingProgress"]
     valorOriginal?: InvestmentEntity["valorOriginal"]
     valorCorrente?: InvestmentEntity["valorCorrente"]

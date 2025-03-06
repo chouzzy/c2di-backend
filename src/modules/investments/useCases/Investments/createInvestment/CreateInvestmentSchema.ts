@@ -1,5 +1,12 @@
 import * as yup from "yup";
 
+const photoSchema = yup.object().shape({
+  id: yup.string().required().uuid(),
+  url: yup.string().required().url(),
+  title: yup.string().optional(), // title é opcional
+  description: yup.string().optional(), // description é opcional
+});
+
 const createInvestmentSchema = yup.object({
 
   title: yup.string().required("O título do investimento é obrigatório."),
@@ -52,9 +59,15 @@ const createInvestmentSchema = yup.object({
       }),
     )
     .required("As imagens são obrigatórias."),
+
+  photos: yup.object().shape({
+    category: yup.string().required(),
+    images: yup.array().of(photoSchema).required().min(1),
+  }).required("As imagens são obrigatórias."),
+
   companyName: yup.string().required("O nome da empresa é obrigatório."),
   finishDate: yup.string().nullable(), // A data de término pode ser nula
-  buildingStatus: yup.string().required("O status da construção é obrigatório."),
+  buildingStatus: yup.string().oneOf(["LANCAMENTO", "CONSTRUCAO", "FINALIZACAO", "FINALIZADO"]).required("O status da construção é obrigatório."),
   investmentDate: yup.string(),
   predictedCost: yup.object().shape({
     foundation: yup.number().required("O custo previsto da fundação é obrigatório."),
@@ -68,7 +81,8 @@ const createInvestmentSchema = yup.object({
     implantation: yup.number().required("O custo realizado da implantação é obrigatório."),
     workmanship: yup.number().required("O custo realizado da mão de obra é obrigatório."),
   }).nullable(),
-  projectManagerID: yup.string().required("O ID do Gerente de projeto é obrigatório")
+  projectManagerID: yup.string().required("O ID do Gerente de projeto é obrigatório"),
+  constructionCompany: yup.string().required("O nome da construtora é obrigatório")
 
 }).noUnknown(true, "Campos desconhecidos no corpo da requisição.").strict();
 

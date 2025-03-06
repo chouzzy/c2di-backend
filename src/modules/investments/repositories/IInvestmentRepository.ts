@@ -20,7 +20,7 @@ interface IInvestmentRepository {
     
     deleteInvestment(id:InvestmentEntity["id"]): Promise<Investment>
 
-    deleteInvestmentImage(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["images"][0]["id"]): Promise<Investment["images"]>
+    deleteInvestmentImage(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["photos"][0]["images"][0]["id"]): Promise<Investment>
 
     deleteInvestmentDocument(investmentID:InvestmentEntity["id"] , id: InvestmentEntity["documents"][0]["id"]): Promise<Investment["documents"]>
 

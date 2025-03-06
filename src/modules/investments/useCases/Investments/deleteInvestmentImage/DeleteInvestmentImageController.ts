@@ -12,8 +12,6 @@ class DeleteInvestmentImageController {
         try {
 
             const { investmentID, imageID } = req.body.data
-            console.log('investmentID, imageID')
-            console.log(investmentID, imageID)
             if (typeof (imageID) != 'string' || typeof (investmentID) != 'string') {
                 throw Error("O id deve ser uma string")
             }
@@ -28,7 +26,7 @@ class DeleteInvestmentImageController {
 
             return res.status(200).json({
                 successMessage: "Foto deletada com sucesso!",
-                images: investment
+                investment: investment
             })
 
         } catch (error) {

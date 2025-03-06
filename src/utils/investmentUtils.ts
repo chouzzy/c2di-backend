@@ -39,9 +39,6 @@ async function createPrismaInvestment(investmentData: CreateInvestmentRequestPro
             throw Error("Título já existente.")
         }
 
-        console.log('investmentData')
-        console.log(investmentData)
-
         const { buildingTotalProgress, financialTotalProgress, buildingProgress } = investmentData
         if (!buildingTotalProgress) { investmentData.buildingTotalProgress = [{ data: new Date(), previsto: 0, realizado: 0 }] }
         if (!financialTotalProgress) { investmentData.financialTotalProgress = [{ data: new Date(), previsto: 0, realizado: 0 }] }
@@ -228,30 +225,57 @@ async function deletePrismaInvestment(id: InvestmentEntity["id"]) {
     }
 }
 
-async function deletePrismaInvestmentImage(investmentID: InvestmentEntity["id"], id: InvestmentEntity["images"][0]["id"]) {
+async function deletePrismaInvestmentImage(investmentID: InvestmentEntity["id"], id: InvestmentEntity["photos"][0]["images"][0]["id"]) {
 
     try {
 
-        const investmentExists = await prisma.investment.findFirst({
-            where: { id: investmentID }
+        const investmentFound = await prisma.investment.findFirst({
+            where: { id: investmentID },
         })
 
-        if (!investmentExists) {
+        if (!investmentFound) {
             throw Error("O empreendimento informado não existe.")
         }
 
+        let groupIndex = -1;
+        let imageIndex = -1;
+
+        for (let i = 0; i < investmentFound.photos.length; i++) {
+            const group = investmentFound.photos[i];
+            imageIndex = group.images.findIndex((image) => image.id === id);
+            if (imageIndex !== -1) {
+                groupIndex = i;
+                break; // Importante: parar o loop quando encontrar
+            }
+        }
+
+        if (groupIndex === -1 || imageIndex === -1) {
+            throw new Error("Imagem não encontrada.");
+        }
+
+        // 3. Filtrar o array de imagens (dentro do grupo)
+        const updatedImages = investmentFound.photos[groupIndex].images.filter(
+            (image) => image.id !== id
+        );
+
+        // 4. Atualiza o array de photos
+        const updatedPhotos = investmentFound.photos.map((group, index) => {
+            if (index === groupIndex) {
+                return { ...group, images: updatedImages }
+            }
+            return group
+        })
+
+        // 5. Atualizar *todo* o array 'photos', usando update + data
         const updatedInvestment = await prisma.investment.update({
             where: { id: investmentID },
             data: {
-                images: {
-                    deleteMany: {
-                        where: { id: id },
-                    },
-                },
-            },
+                photos: {
+                    set: updatedPhotos //Substitui o array inteiro
+                }
+            }
         });
-
-        return updatedInvestment.images
+        return updatedInvestment;
 
     } catch (error) {
         throw error
@@ -526,7 +550,7 @@ function converterExcelEmArrayMetroQuadrado(worksheet: Worksheet): Investment["v
             console.error(`Valor ausente na linha ${rowNumber}, coluna "Valor".`);
             return; // Ou lançar um erro: throw new Error(`Valor ausente na linha ${rowNumber}`);
         }
-        
+
         const valor = parseFloat(
             valorCell.toString().replace("R$ ", "").replace(",", ".")
         );

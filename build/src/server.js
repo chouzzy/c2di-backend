@@ -12,6 +12,7 @@ const cors_1 = __importDefault(require("cors"));
 const swagger_1 = __importDefault(require("../swagger"));
 const InvestmentProgressImportController_1 = require("./modules/investments/useCases/Investments/investmentProgressImport/InvestmentProgressImportController");
 const InvestmentUnidadesImportController_1 = require("./modules/investments/useCases/Investments/investmentUnidadesImport/InvestmentUnidadesImportController");
+const InvestmentMetroQuadradoImportController_1 = require("./modules/investments/useCases/Investments/investmentMetroQuadradoImport/InvestmentMetroQuadradoImportController");
 var cookieParser = require('cookie-parser');
 const app = (0, express_1.default)();
 app.use((0, cors_1.default)({
@@ -23,6 +24,8 @@ const projectProgressInvestmentPartnerController = new InvestmentProgressImportC
 app.post('/investments/progress/import/:id', projectProgressInvestmentPartnerController.handle);
 const projectUnidadesController = new InvestmentUnidadesImportController_1.ProjectUnidadesController();
 app.post('/investments/unidades/import/:id', projectUnidadesController.handle);
+const projectMetroQuadradoController = new InvestmentMetroQuadradoImportController_1.ProjectMetroQuadradoController();
+app.post('/investments/metroQuadrado/import/:id', projectMetroQuadradoController.handle);
 app.use(express_1.default.json()); // Define o body parser para JSON após a rota de upload
 app.use(cookieParser());
 app.get('/test-cookies', (req, res) => {

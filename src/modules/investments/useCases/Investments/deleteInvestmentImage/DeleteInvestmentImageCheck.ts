@@ -7,7 +7,7 @@ import { deleteInvestmentImageSchema } from "./DeleteInvestmentImageSchema";
 
 
 
-async function checkParam(id: InvestmentEntity["images"][0]["id"]): Promise<validationResponse> {
+async function checkParam(id: InvestmentEntity["photos"][0]["images"][0]["id"]): Promise<validationResponse> {
     // check body properties
     try {
         await deleteInvestmentImageSchema.validate({id}, {
