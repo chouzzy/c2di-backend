@@ -2,7 +2,7 @@ import * as yup from "yup";
 
 const photoSchema = yup.object().shape({
   id: yup.string().required().uuid(),
-  url: yup.string().required().url(),
+  url: yup.string().required(),
   title: yup.string().optional(), // title é opcional
   description: yup.string().optional(), // description é opcional
 });
@@ -63,6 +63,7 @@ const updateInvestmentSchema = yup.object({
 
   investmentValue: yup.string(), // Número positivo
   companyName: yup.string(),
+  
 
   partners: yup.array().of(
     yup.object().shape({

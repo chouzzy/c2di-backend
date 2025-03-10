@@ -32,7 +32,7 @@ interface CreateInvestmentRequestProps {
     realizedCost: InvestmentEntity["realizedCost"];
     projectManagerID: InvestmentEntity["projectManagerID"]
     constructionCompany: InvestmentEntity["constructionCompany"]
-    buildingProgress?: InvestmentEntity["buildingProgress"]
+    buildingProgress: InvestmentEntity["buildingProgress"]
     valorOriginal?: InvestmentEntity["valorOriginal"]
     valorCorrente?: InvestmentEntity["valorCorrente"]
     historicoDeValorizacao?: InvestmentEntity["historicoDeValorizacao"]
@@ -48,7 +48,7 @@ class CreateInvestmentsController {
 
             const investmentData: CreateInvestmentRequestProps = req.body
 
-            const { partners, documents, images } = investmentData
+            const { partners, documents, images, realizedCost } = investmentData
 
             if (partners) {
                 partners.map((partner) => {
@@ -66,6 +66,10 @@ class CreateInvestmentsController {
                 images.map((img) => {
                     img.id = uuidv4()
                 })
+            }
+
+            if (!realizedCost) {
+                investmentData.realizedCost = { foundation: 0, implantation: 0, structure: 0, workmanship: 0 }
             }
 
 

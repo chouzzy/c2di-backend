@@ -123,11 +123,11 @@ model Investment {
   partners         Partners[] // fornecedores principais
   finishDate       DateTime? // data de entrega
   buildingStatus   BuildingStatus @default(LANCAMENTO) // status da construção -- vai abrir em uma nova tabela
-  buildingProgress BuildingProgress? // status da construção -- vai abrir em uma nova tabela
+  buildingProgress BuildingProgress // status da construção -- vai abrir em uma nova tabela
   investmentDate   DateTime? // data da compra do investidor
 
   predictedCost PredictedCost // custo previsto - gerente de projeto vai cadastrar custo total e custos macro
-  realizedCost  RealizedCost? // custo realizado - custo total, itens macro (mesmos itens do buildingStatus)
+  realizedCost  RealizedCost // custo realizado - custo total, itens macro (mesmos itens do buildingStatus)
 
   financialTotalProgress FinancialTotalProgress[]
   buildingTotalProgress  BuildingTotalProgress[]

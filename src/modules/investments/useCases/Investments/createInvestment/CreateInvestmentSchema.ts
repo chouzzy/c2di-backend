@@ -2,7 +2,7 @@ import * as yup from "yup";
 
 const photoSchema = yup.object().shape({
   id: yup.string().required().uuid(),
-  url: yup.string().required().url(),
+  url: yup.string().required(),
   title: yup.string().optional(), // title é opcional
   description: yup.string().optional(), // description é opcional
 });
@@ -57,13 +57,15 @@ const createInvestmentSchema = yup.object({
         url: yup.string().required("A URL da imagem é obrigatória."),
         description: yup.string().optional(),
       }),
-    )
-    .required("As imagens são obrigatórias."),
+    ),
 
-  photos: yup.object().shape({
-    category: yup.string().required(),
-    images: yup.array().of(photoSchema).required().min(1),
-  }).required("As imagens são obrigatórias."),
+  photos: yup.array()
+    .of(
+      yup.object().shape({
+        category: yup.string().required(),
+        images: yup.array().of(photoSchema),
+      })
+    ),
 
   companyName: yup.string().required("O nome da empresa é obrigatório."),
   finishDate: yup.string().nullable(), // A data de término pode ser nula
