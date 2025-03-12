@@ -7,6 +7,7 @@ const photoSchema = yup.object().shape({
   description: yup.string().optional(), // description é opcional
 });
 
+
 const updateInvestmentSchema = yup.object({
   title: yup.string(),
   description: yup.string(),
@@ -63,7 +64,7 @@ const updateInvestmentSchema = yup.object({
 
   investmentValue: yup.string(), // Número positivo
   companyName: yup.string(),
-  
+
 
   partners: yup.array().of(
     yup.object().shape({
@@ -119,7 +120,20 @@ const updateInvestmentSchema = yup.object({
     id: yup.string().required('ID é obrigatório'),
     valor: yup.string().required('O valor é obrigatório'),
   })),
-  constructionCompany: yup.string()
+  constructionCompany: yup.string(),
+
+  tipologies: yup.array()
+    .of(yup.object().shape({
+      name: yup.string().required("O nome da tipologia é obrigatório.").trim().min(3, "O nome deve ter pelo menos 3 caracteres."), // String, obrigatório, mínimo de 3 caracteres
+      image: yup.string().required("A URL da imagem da planta é obrigatória.").url("A URL da imagem não é válida."), // String, obrigatório, URL válida.
+      description: yup.string().optional(), // String, opcional.  Se precisar, adicione regras como .min() ou .max()
+      rooms: yup.number().optional().integer("O número de quartos deve ser um número inteiro.").min(0, "O número de quartos não pode ser negativo."), // Number, opcional, inteiro, não negativo
+      suits: yup.number().optional().integer("O número de suítes deve ser um número inteiro.").min(0, "O número de suítes não pode ser negativo."), // Number, opcional, inteiro, não negativo
+      bathrooms: yup.number().optional().integer("O número de banheiros deve ser um número inteiro.").min(0, "O número de banheiros não pode ser negativo."), // Number, opcional, inteiro, não negativo
+      parkingSpaces: yup.number().optional().integer("O número de vagas deve ser um número inteiro.").min(0, "O número de vagas não pode ser negativo."),// Number, opcional, inteiro, não negativo
+      area: yup.number().optional(),    // String, opcional.  Se precisar validar como número, mude para yup.number() e adicione as validações.
+      tags: yup.array().of(yup.string().trim()).optional(), // Array de strings, opcional. Cada tag deve ter pelo menos 1 caractere (após trim)
+    }))
 
 }).noUnknown(true, "Campos desconhecidos no corpo da requisição.").strict();
 
