@@ -43,8 +43,9 @@ class InvestmentEntity {
   constructionCompany!: Investment["constructionCompany"]
 
   photos!: Investment["photos"]
-  
+
   tipologies!: Investment["tipologies"]
+  alvaras!: Investment["alvaras"]
 
   createdAt!: Investment["createdAt"];
   updatedAt?: Investment["updatedAt"];

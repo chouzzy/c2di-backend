@@ -146,6 +146,7 @@ model Investment {
   photos PhotosGroup[]
 
   tipologies Tipologies[]
+  alvaras    Alvaras?
 
   active Boolean @default(true) //Status do projeto (arquivado ou ativo)
 
@@ -155,17 +156,32 @@ model Investment {
   @@map("investments")
 }
 
+type Alvaras {
+  demolicao  AlvaraInfo?
+  aprovacao  AlvaraInfo?
+  construcao AlvaraInfo?
+  estande    AlvaraInfo?
+}
+
+// Crie um tipo para as informações do alvará (reutilizável)
+type AlvaraInfo {
+  title        String
+  link         String?
+  numero       String?
+  observacoes  String?
+}
+
 type Tipologies {
-  id             String    @default(uuid())
-  name           String
-  image          String // URL da imagem da planta
-  description    String? //Descroção
-  rooms          Int? // Quartos
-  suits          Int? // Suítes
-  bathrooms      Int? // Banheiros
-  parkingSpaces  Int? // QTS VAGAS GARAGEM
-  area           Int? // m²
-  tags           String[] // VARANDA GOURMET; PISCINA PRIV; GARAGEM; AR CONDIC.
+  id            String   @default(uuid())
+  name          String
+  image         String // URL da imagem da planta
+  description   String? //Descroção
+  rooms         Int? // Quartos
+  suits         Int? // Suítes
+  bathrooms     Int? // Banheiros
+  parkingSpaces Int? // QTS VAGAS GARAGEM
+  area          Int? // m²
+  tags          String[] // VARANDA GOURMET; PISCINA PRIV; GARAGEM; AR CONDIC.
 }
 
 type PhotosGroup {

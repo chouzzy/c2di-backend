@@ -40,6 +40,7 @@ interface UpdateInvestmentRequestProps {
     valorMetroQuadrado?: InvestmentEntity["valorMetroQuadrado"]
     constructionCompany?: InvestmentEntity["constructionCompany"]
     tipologies?: InvestmentEntity["tipologies"]
+    alvaras?:InvestmentEntity["alvaras"]
 
 }
 

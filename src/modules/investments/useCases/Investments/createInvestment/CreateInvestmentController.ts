@@ -39,6 +39,7 @@ interface CreateInvestmentRequestProps {
     financialTotalProgress?: InvestmentEntity["financialTotalProgress"]
     buildingTotalProgress?: InvestmentEntity["buildingTotalProgress"]
     tipologies: InvestmentEntity["tipologies"]
+    alvaras: InvestmentEntity["alvaras"]
 
 }
 
