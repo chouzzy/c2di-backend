@@ -1,61 +1,32 @@
-import 'reflect-metadata';
-import express, { NextFunction, Request, Response } from 'express'
-import { router } from './routes'
-import { AppError } from './errors/AppError'
-import bodyParser from 'body-parser';
-import swaggerUi from 'swagger-ui-express';
+import express from 'express';
+import 'express-async-errors'; // Ótima prática para lidar com erros
 import cors from 'cors';
-import specs from '../swagger';
-import { ProjectProgressInvestmentPartnerController } from './modules/investments/useCases/Investments/investmentProgressImport/InvestmentProgressImportController';
-import formidable from 'formidable';
-import { checkJwtFromCookie, jwtCheck } from './modules/registrations/middleware/auth0Check';
-var cookieParser = require('cookie-parser')
 
+// Importe AMBOS os roteadores
+import { router } from './routes'; // Roteador principal para rotas comuns
+import { stripeRoutes } from './routes/stripe.routes'; // Roteador específico do Stripe
 
-const app = express()
+const app = express();
 
-app.use(cors({
-    origin: process.env.FRONT_END_URL,
-    methods: ['GET', 'PUT', 'POST', 'DELETE', 'PATCH'],
-    credentials: true, // Permita o envio de credenciais (cookies, headers de autorização)
-}));
+app.use(cors());
 
-const projectProgressInvestmentPartnerController = new ProjectProgressInvestmentPartnerController();
+// 1. ROTA VIP PARA O STRIPE
+// Colocamos a rota do webhook do Stripe ANTES de qualquer parser de JSON.
+// O express.raw() que está dentro de stripe.routes.ts vai funcionar perfeitamente aqui.
+app.use(stripeRoutes);
 
-app.post('/investments/progress/import/:id', projectProgressInvestmentPartnerController.handle);
+// 2. "MORDOMO" GLOBAL PARA AS OUTRAS ROTAS
+// Agora, depois da rota do Stripe já ter passado, aplicamos o parser de JSON
+// para todas as outras rotas da sua aplicação.
+app.use(express.json());
 
-app.use(express.json()); // Define o body parser para JSON após a rota de upload
-app.use(cookieParser());
-
-app.get('/test-cookies', (req, res) => {
-    res.json({ cookies: req.cookies });
-});
-
-
-
+// 3. REGISTRO DAS ROTAS COMUNS
+// O roteador principal é registrado por último.
 app.use(router);
 
 
-
-// Tratamento de erro
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-
-    // Erros instanciados na classe AppError, ex throw new AppError(lalala)
-    if (err instanceof AppError) {
-        return res.status(err.statusCode).json({
-            message: err.message
-        })
-    }
-
-    console.log(err)
-
-    // Erro sem instanciar na classe App Error ex Throw new Error(lalala)
-    return res.status(500).json({
-        status: 'error',
-        message: `⛔ Internal Server Error: ${err.message}⛔`
-    })
-})
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
-
-app.listen(8081, () => console.log('System working... 🦥'));
+// --- Inicialização do Servidor ---
+const PORT = process.env.PORT || 3333;
+app.listen(PORT, () => {
+    console.log(`🚀 Servidor rodando na porta ${PORT}`);
+});

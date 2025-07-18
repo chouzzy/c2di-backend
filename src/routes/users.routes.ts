@@ -1,46 +1,23 @@
-import { Router } from "express"
-import { CreateUsersController } from "../modules/registrations/useCases/Users/createUsers/CreateUsersController"
-import { ListUsersController } from "../modules/registrations/useCases/Users/listUsers/ListUsersController"
-import { UpdateUsersController } from "../modules/registrations/useCases/Users/updateUsers/UpdateUsersController"
-import { DeleteUsersController } from "../modules/registrations/useCases/Users/deleteUsers/DeleteUsersController"
-import { ListResumedUsersController } from "../modules/registrations/useCases/Users/listResumedUsers/ListResumedUsersController"
-import { checkJwtFromCookie, jwtCheck } from "../modules/registrations/middleware/auth0Check"
-import { FindUserByIDController } from "../modules/registrations/useCases/Users/findUserByID/FindUserByIDController"
-import { FindUserByEmailController } from "../modules/registrations/useCases/Users/findUserByEmail/FindUserByEmailController"
-import { ResetPasswordUsersController } from "../modules/registrations/useCases/Users/resetPasswordUsers/ResetPasswordUsersController"
+// src/routes/user.routes.ts
 
-const usersRoutes = Router()
+import { Router } from 'express';
+import { CreateUserController } from '../modules/users/useCases/createUser/CreateUserController';
 
+// --- Inicialização ---
+const userRoutes = Router();
 
-const listUsersController = new ListUsersController()
-usersRoutes.get('/', checkJwtFromCookie, jwtCheck, listUsersController.handle)
+// Cria uma instância do nosso controller de criação de usuário
+const createUserController = new CreateUserController();
 
-const findUserByIDController = new FindUserByIDController()
-usersRoutes.get('/findByID/:id', checkJwtFromCookie, jwtCheck, findUserByIDController.handle)
+/**
+ * @route   POST /api/users
+ * @desc    Cria um novo usuário no banco de dados.
+ * Esta rota é projetada para ser chamada por uma "Ação" do Auth0.
+ * @access  Privado (Protegido por uma chave secreta no header)
+ */
+userRoutes.post(
+    '/api/users',
+    createUserController.handle
+);
 
-const findUserByEmailController = new FindUserByEmailController()
-usersRoutes.get('/findUnique', findUserByEmailController.handle)
-
-const createUsersController = new CreateUsersController()
-usersRoutes.post('/create', checkJwtFromCookie, jwtCheck, createUsersController.handle)
-
-const updateUsersController = new UpdateUsersController()
-usersRoutes.put('/update/:id', checkJwtFromCookie, jwtCheck, updateUsersController.handle)
-
-const deleteUsersController = new DeleteUsersController()
-usersRoutes.delete('/delete', checkJwtFromCookie, jwtCheck, deleteUsersController.handle)
-
-const listResumedUsersController = new ListResumedUsersController()
-usersRoutes.get('/resume', checkJwtFromCookie, jwtCheck, listResumedUsersController.handle)
-
-const resetPasswordUsersController = new ResetPasswordUsersController()
-usersRoutes.post('/reset-password', checkJwtFromCookie, jwtCheck, resetPasswordUsersController.handle)
-
-
-
-// Não é mais necessário
-// const authenticateUsersController = new AuthenticateUsersController()
-// usersRoutes.post('/login', authenticateUsersController.handle)
-
-
-export { usersRoutes }
+export { userRoutes };
