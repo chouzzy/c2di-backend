@@ -8,6 +8,7 @@ const prisma = new PrismaClient();
 
 // Inicializa o cliente do Stripe com a chave secreta
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+    // Nota: '2025-06-30.basil' é uma versão beta. Para produção, considere usar a última versão estável, ex: '2024-06-20'.
     apiVersion: '2025-06-30.basil',
 });
 
@@ -23,7 +24,6 @@ class HandleStripeWebhookUseCase {
     async execute(event: Stripe.Event): Promise<void> {
 
         switch (event.type) {
-
             // Caso: Um cliente finalizou um checkout com sucesso
             case 'checkout.session.completed': {
                 console.log('✅ Evento: checkout.session.completed recebido.');
@@ -38,17 +38,13 @@ class HandleStripeWebhookUseCase {
                     return;
                 }
 
-                // Busca os detalhes completos da assinatura para ter todas as informações
                 const subscription = await stripe.subscriptions.retrieve(subscriptionId);
-
-                // CORREÇÃO: Acessa a data do fim do período a partir do primeiro item da assinatura
                 const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
                 if (!currentPeriodEnd) {
                     console.error(`❌ Erro: Não foi possível encontrar current_period_end para a assinatura ${subscriptionId}`);
                     return;
                 }
 
-                // Atualiza o usuário no nosso banco de dados
                 await prisma.user.update({
                     where: { auth0UserId },
                     data: {
@@ -56,7 +52,7 @@ class HandleStripeWebhookUseCase {
                             customerId: customerId,
                             subscriptionId: subscription.id,
                             status: subscription.status,
-                            currentPeriodEnd: new Date(currentPeriodEnd * 1000), // Converte de timestamp para Date
+                            currentPeriodEnd: new Date(currentPeriodEnd * 1000),
                         },
                     },
                 });
@@ -65,31 +61,144 @@ class HandleStripeWebhookUseCase {
                 break;
             }
 
-            // Caso: Uma assinatura existente foi atualizada
+            // Este evento lida com renovações, falhas de pagamento, cancelamentos, etc.
+            // Ele é a nossa única fonte da verdade para o status da assinatura.
             case 'customer.subscription.updated': {
+                console.log('🔄 Evento: customer.subscription.updated recebido.');
                 const subscription = event.data.object as Stripe.Subscription;
                 const customerId = subscription.customer as string;
-
-                // CORREÇÃO: Encontra o usuário primeiro para uma atualização segura
+                
+                console.log('🔄 !!!Status:', subscription.status)
                 const user = await prisma.user.findFirst({
                     where: { stripe: { is: { customerId: customerId } } }
                 });
 
                 if (!user || !user.stripe) {
-                    console.error(`❌ Erro: Usuário com customerId ${customerId} não encontrado.`);
+                    console.error(`❌ Erro: Usuário com customerId ${customerId} não encontrado para subscription.updated.`);
                     return;
                 }
 
-                // CORREÇÃO: Acessa a data do fim do período a partir do primeiro item
                 const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
 
-                // Atualiza o registro do usuário específico
+
+                // Apenas atualizamos nosso banco de dados para espelhar o estado atual do Stripe.
                 await prisma.user.update({
                     where: { id: user.id },
                     data: {
                         stripe: {
-                            customerId: user.stripe.customerId, // Mantém o customerId original
-                            subscriptionId: subscription.id, // Atualiza para o ID de assinatura mais recente
+                            ...user.stripe, // Mantém dados como o customerId
+                            subscriptionId: subscription.id,
+                            status: subscription.status, // O status mais recente vindo do Stripe
+                            currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : user.stripe.currentPeriodEnd,
+                        },
+                    },
+                });
+
+                console.log(`🔄 Assinatura atualizada para o usuário ${user.auth0UserId}. Novo status: ${subscription.status}`);
+                break;
+            }
+
+            // Caso: Uma fatura de renovação foi paga com sucesso
+            case 'invoice.paid': {
+                console.log('💰 Evento: invoice.paid recebido.');
+                const invoice = event.data.object as Stripe.Invoice;
+                const customerId = invoice.customer as string;
+
+                // O ID da assinatura vem de dentro do primeiro item da fatura.
+                const subscriptionId = invoice.lines.data[0]?.subscription as string;
+                if (!subscriptionId) {
+                    // Ignora faturas que não são de assinaturas (ex: pagamentos únicos)
+                    console.log(`🔔 Fatura avulsa paga (ID: ${invoice.id}), ignorando.`);
+                    return;
+                }
+
+                const user = await prisma.user.findFirst({
+                    where: { stripe: { is: { customerId: customerId } } }
+                });
+                if (!user || !user.stripe) {
+                    console.error(`❌ Erro: Usuário com customerId ${customerId} não encontrado para invoice.paid.`);
+                    return;
+                }
+
+                // Busca os dados mais recentes da assinatura para garantir que temos o status e a data corretos
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+                const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
+
+                // Atualiza o status e a data de renovação
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        stripe: {
+                            ...user.stripe,
+                            status: subscription.status, // Deve ser 'active'
+                            currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : user.stripe.currentPeriodEnd,
+                        }
+                    }
+                });
+
+                console.log(`💰 Fatura paga para o usuário ${user.auth0UserId}. Assinatura renovada.`);
+                break;
+            }
+
+            // Caso: Uma fatura de renovação falhou
+            case 'invoice.payment_failed': {
+                console.log('⚠️ Evento: invoice.payment_failed recebido.');
+                const invoice = event.data.object as Stripe.Invoice;
+                const customerId = invoice.customer as string;
+
+                // CORREÇÃO: Pegamos o ID da assinatura aqui
+                const subscriptionId = invoice.lines.data[0]?.subscription as string;
+                if (!subscriptionId) {
+                    console.error(`❌ Erro: subscriptionId não encontrado na fatura invoice.payment_failed.`);
+                    return;
+                }
+
+                const user = await prisma.user.findFirst({
+                    where: { stripe: { is: { customerId: customerId } } }
+                });
+                if (!user || !user.stripe) {
+                    console.error(`❌ Erro: Usuário com customerId ${customerId} não encontrado.`);
+                    return;
+                }
+
+                // CORREÇÃO: Buscamos a assinatura completa para pegar o status
+                const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        stripe: {
+                            ...user.stripe,
+                            status: subscription.status, // Atualiza para 'past_due'
+                        }
+                    }
+                });
+
+                console.log(`⚠️ Falha no pagamento para o usuário ${user.auth0UserId}. Status: ${subscription.status}`);
+                break;
+            }
+
+            // Caso: Uma assinatura existente foi atualizada
+            case 'customer.subscription.updated': {
+                const subscription = event.data.object as Stripe.Subscription;
+                const customerId = subscription.customer as string;
+
+                const user = await prisma.user.findFirst({
+                    where: { stripe: { is: { customerId: customerId } } }
+                });
+                if (!user || !user.stripe) {
+                    console.error(`❌ Erro: Usuário com customerId ${customerId} não encontrado.`);
+                    return;
+                }
+
+                const currentPeriodEnd = subscription.items.data[0]?.current_period_end;
+
+                await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        stripe: {
+                            customerId: user.stripe.customerId,
+                            subscriptionId: subscription.id,
                             status: subscription.status,
                             currentPeriodEnd: currentPeriodEnd ? new Date(currentPeriodEnd * 1000) : user.stripe.currentPeriodEnd,
                         },
@@ -105,23 +214,20 @@ class HandleStripeWebhookUseCase {
                 const subscription = event.data.object as Stripe.Subscription;
                 const customerId = subscription.customer as string;
 
-                // CORREÇÃO: Encontra o usuário primeiro
                 const user = await prisma.user.findFirst({
                     where: { stripe: { is: { customerId: customerId } } }
                 });
-
                 if (!user || !user.stripe) {
                     console.error(`❌ Erro: Usuário com customerId ${customerId} não encontrado.`);
                     return;
                 }
 
-                // Atualiza o status para "canceled"
                 await prisma.user.update({
                     where: { id: user.id },
                     data: {
                         stripe: {
-                            ...user.stripe, // Mantém os dados existentes
-                            status: subscription.status, // Apenas atualiza o status
+                            ...user.stripe,
+                            status: subscription.status,
                         },
                     },
                 });
