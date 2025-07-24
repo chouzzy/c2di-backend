@@ -8,7 +8,7 @@ const router = Router();
 
 // O roteador principal agora só cuida das rotas que PODEM usar o express.json()
 router.use('/', welcomeRoutes);
-router.use(userRoutes);
+router.use(userRoutes); //User Routes
 // Adicione outras rotas comuns aqui...
 
 export { router };
